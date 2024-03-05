@@ -1,25 +1,25 @@
-### Current Env. + Game.
+# Current Env. + Game.
 
-PLAYERS :
+### PLAYERS :
 
 Player 1: Blue Agent
 
 Player 2: Red Agent
 
 
-AGENTS :
+### AGENTS :
 
 For this demo, the red agent will be a random agent, and the blue agent will the user (i.e., input).
 
 
-ACTION SPACE :
+### ACTION SPACE :
 
 Blue Agent Actions: {'Neutral': 0, 'Block': 1, 'Isolate': 2, 'Unblock': 3, 'Unisolate': 4}
 
 Red Agent Actions: {'Neutral': 0, 'Spread': 1}
 
 
-ENVIRONMENTAL DYNAMICS :
+### ENVIRONMENTAL DYNAMICS :
 > The environment will be a network of hosts and critical servers. The network will be represented as a connection matrix
 where each row represents a host or critical server, and each column represents a connection to another host or critical server. 
 The connection matrix will be a binary matrix, where 1 represents a connection and 0 represents no connection, and can be thought of as a directed graph.
@@ -33,6 +33,8 @@ in the environment due to their actions. The weights will be inputs by the user 
 > The actions available to the agents will be dictated by the updated connection matrix, and sometimes its comparison to the original connection matrix.
 
 > When an action is taken, the connection matrix will be updated to reflect the changes in the environment due to the action.
+
+
 
 *actions*
 
@@ -55,7 +57,7 @@ If the red agent takes the action 'Neutral', the infected hosts will not change.
 If the red agent takes the action 'Spread', the chosen infected hosts will infect its neighbours infected its currently connected neighbours.
 
 
-VARIABLES :
+### VARIABLES :
 
 H - Total Hosts
 
@@ -84,7 +86,7 @@ Omega - Connection Matrix: Host and Critical Server, (binary)
 'Spread' - spread the infection of select host's neighbor in the network (can be changed to a selection of neighbors)
 
 
-PAYOFFS :
+### PAYOFFS :
 
 Payoff for Blue Agent = w_1 * Delta(H - h) + w_2 * Delta(C - c) - ( w_3 * Delta(psi) + w_4 * Delta(l) )
 
