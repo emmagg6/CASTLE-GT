@@ -54,7 +54,6 @@ security_game = APIGame(env, max_rounds=5)
 state = security_game.new_initial_state()
 env.draw_network()
 
-
 action_blue = None
 target_blue = None
 action_red = None
