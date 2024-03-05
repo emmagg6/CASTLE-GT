@@ -41,17 +41,6 @@ infected_criticals = np.array([0,0])
 w_blue = np.array([0.5, 1, 0.3, 0.2])
 w_red = np.array([0.75, 1.0])
 
-################ ENVIRONMENT #################
-
-env = Environment(player_count, host_count, critical_count, 
-                  connections, infected_hosts, infected_criticals,
-                  w_blue, w_red)
-
-################ GAME ################
-security_game = APIGame(env, max_rounds=5)
-
-state = security_game.new_initial_state()
-env.draw_network()
 
 ################ ENVIRONMENT #################
 
