@@ -71,6 +71,8 @@ target_blue = None
 action_red = None
 target_red = None
 
+running = True
+
 while running and not state.is_terminal():
     # 'draw'' the environment and available actions
     env.draw_network()
@@ -87,7 +89,7 @@ while running and not state.is_terminal():
             running = False
         elif event.type == pygame.MOUSEBUTTONDOWN and state.current_player() == 0:
             mouse_pos = pygame.mouse.get_pos()
-            # eed to implement the logic to check if the mouse click is on one of the action texts
+            # need to implement the logic to check if the mouse click is on one of the action texts
             # once obtained, set action_blue to that action and ask for the host to target
             
             # example: action_blue, target_blue = get_action_and_target_from_mouse_position(mouse_pos, actions_targets)
