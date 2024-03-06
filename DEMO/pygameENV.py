@@ -1,4 +1,4 @@
-import pyspiel
+# import pyspiel
 import random
 import numpy as np
 import pygame
@@ -6,42 +6,28 @@ import sys
 
 class Environment:
     def __init__(self, num_players, num_hosts, num_criticals, connection_matrix, initial_hosts_infected,
-                 initial_criticals_infected, weights_blue, weights_red, 
-                 screen_dimensions=(800,600), host_radius=20, server_size=30, 
-                 host_color=(200, 200, 200), infected_color=(200, 0, 0), server_color=(0, 128, 0), 
-                 connection_color=(0,0,0), disconnected_color=(192, 192, 192)):
+                 initial_criticals_infected, weights_blue, weights_red):
         
         self.num_players = num_players
         self.H = num_hosts
         self.C = num_criticals
         self.O = connection_matrix
-        self.O_original = connection_matrix
+        self.O_original = np.copy(connection_matrix)
+        self.actions = ["Isolate", "Block", "Neutral", "Unblock", "Unisolate"]
 
+        #h, b, and i are lists of 0,1 indicating infected, blocked, and isolated hosts respectively
         self.h = initial_hosts_infected
+        self.b = [0 for i in range(self.H)]
+        self.i = [0 for i in range(self.H)]
         self.c = initial_criticals_infected
 
         self.l = np.zeros(self.H)
         self.psi = np.zeros(self.H)
 
+
         self.w_blue = weights_blue
         self.w_red = weights_red
 
-        self.screen_width, self.screen_height = screen_dimensions
-        self.host_radius = host_radius
-        self.server_size = server_size
-        self.host_color = host_color
-        self.infected_color = infected_color
-        self.server_color = server_color
-        self.connection_color = connection_color
-        self.disconnected_color = disconnected_color
-
-        self.text_color = (0,0,0)
-        pygame.font.init()
-        self.font = pygame.font.Font(None, 30)
-
-        ####### PYGAME SCREEN ######
-        pygame.init()
-        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
 
 
     def initialize(self) :
@@ -71,6 +57,7 @@ class Environment:
         for host in h_blue : 
             if self.h[host] == 1 :
                 if a_blue == 'Block' :
+                    self.b[host] = 1
                     for i in range(self.C):
                         i = i + self.H
                         self.O[host, i] = 0
@@ -78,7 +65,9 @@ class Environment:
                 elif a_blue == 'Isolate' :
                     self.O[host, :] = 0
                     self.O[:, host] = 0
+                    self.i[host] = 1
                 elif a_blue == 'Unblock':
+                    self.b[host] = 0
                     for i in range(self.C):
                         i = i + self.H
                         self.O[host, i] = self.O_original[host, i]
@@ -86,6 +75,7 @@ class Environment:
                 elif a_blue == 'Unisolate':
                     self.O[host, :] = self.O_original[host, :]
                     self.O[:, host] = self.O_original[:, host]
+                    self.i[host] = 0
 
                 neighbors = np.sum(self.O[host, :])
                 self.l[host] = np.cos((neighbors / (self.H + self.C)))
@@ -113,24 +103,20 @@ class Environment:
         # create a dictionary between the legal actions and the hosts that they can be applied to
         actions_hosts = {}
         if player == 0:
-            actions = ['Neutral']
             # print(actions[0])
             targets = [i for i in range(self.H)]
-            actions_hosts[actions[0]] = [targets[0]]
-            if np.any(self.O[self.H:] != self.O_original[self.H:]):
-                actions.append(['Unblock'])
-                targets.append([i for i in range(self.H) if self.O[i, :].sum() > 0])
-                actions_hosts[actions[1]] = [targets[1]]
-            if np.any(self.O[:self.H, :self.H] != self.O_original[:self.H, :self.H]):
-                actions.append(['Unisolate'])
-                targets.append([i for i in range(self.H) if self.O[i, :].sum() > 0])
-                actions_hosts[actions[1]] = [targets[1]]
+            actions_hosts["Neutral"] = targets
+            if np.any(self.b):
+                targets =[i for i in range(self.H) if self.b[i] == 1]
+                actions_hosts["Unblock"] = targets
+            if np.any(self.i):
+                targets = [i for i in range(self.H) if self.i[i] == 1]
+                actions_hosts["Unisolate"] = targets
             if np.sum(self.h) > 0:
-                actions.append(['Block', 'Isolate'])
-                targets.append([i for i in range(self.H) if self.h[i] == 1])
-                targets.append([i for i in range(self.H) if self.O[i, :].sum() > 0])
-                actions_hosts[actions[1][0]] = [targets[1]]
-                actions_hosts[actions[1][1]] = [targets[2]]
+                targets1 = [i for i in range(self.H) if self.O[i, self.H:self.H+self.C].sum() > 0 and self.h[i] == 1 and self.b[i]==0]
+                targets2 =[i for i in range(self.H) if self.h[i] == 1 and self.i[i]==0]
+                actions_hosts["Block"] = targets1
+                actions_hosts["Isolate"] = targets2
             return actions_hosts
         else:
             if np.sum(self.h) == 0:
@@ -174,37 +160,61 @@ class Environment:
     
     ################ PYGAME ADDITIONALS ################
 
+class PyGameInterface:
+    def __init__(self, environment, screen_dimensions=(800,600), host_radius=20, server_size=30, 
+                 host_color=(200, 200, 200), infected_color=(200, 0, 0), server_color=(0, 128, 0), 
+                 connection_color=(0,0,0), disconnected_color=(192, 192, 192)):
+        self.env = environment
+        self.screen_width, self.screen_height = screen_dimensions
+        self.host_radius = host_radius
+        self.server_size = server_size
+        self.host_color = host_color
+        self.infected_color = infected_color
+        self.server_color = server_color
+        self.connection_color = connection_color
+        self.disconnected_color = disconnected_color
+        self.button_width = 20
+        self.button_height = 30
+
+        self.text_color = (0,0,0)
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 30)
+
+        ####### PYGAME SCREEN ######
+        pygame.init()
+        self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
+
 
     def draw_network(self):
         # Clear the screen
         self.screen.fill((255, 255, 255))
 
         # Draw the network based on the connection matrix
-        for i in range(self.H + self.C):
+        for i in range(self.env.H + self.env.C):
             # Determine the color and shape of the node
-            if i < self.H:  # It's a host
-                color = self.infected_color if self.h[i] == 1 else self.host_color
+            if i < self.env.H:  # It's a host
+                color = self.infected_color if self.env.h[i] == 1 else self.host_color
                 position = self.get_node_position(i)
                 pygame.draw.circle(self.screen, color, position, self.host_radius)
             else:  # It's a server
-                color = self.server_color if self.c[i - self.H] == 0 else self.infected_color  #  server color based on infection status
+                color = self.server_color if self.env.c[i - self.env.H] == 0 else self.infected_color  #  server color based on infection status
                 position = self.get_node_position(i)
                 pygame.draw.rect(self.screen, color, (position[0] - self.server_size // 2,
                                                       position[1] - self.server_size // 2,
                                                       self.server_size, self.server_size))
 
             # Creating connections (or lack from original)
-            for j in range(self.H + self.C):
+            for j in range(self.env.H + self.env.C):
                 neighbor_position = self.get_node_position(j)
-                if self.O[i, j] == 1:
+                if self.env.O[i, j] == 1:
                     pygame.draw.line(self.screen, self.connection_color,
                                      position, neighbor_position, 1)
-                elif i < self.H and j >= self.H and self.O_original[i, j] == 1:  # grey lines for original connections that are now disconnected
+                elif self.env.O_original[i, j] == 1:  # grey lines for original connections that are now disconnected
                     pygame.draw.line(self.screen, self.disconnected_color,
                                      position, neighbor_position, 1)
                     
             # Enumerating Hosts / Servers
-            text_surface = self.font.render(str(i if i < self.H else i - self.H), True, self.text_color)
+            text_surface = self.font.render(str(i if i < self.env.H else i - self.env.H), True, self.text_color)
             text_rect = text_surface.get_rect(center=position)
             self.screen.blit(text_surface, text_rect)
 
@@ -213,16 +223,24 @@ class Environment:
 
     def get_node_position(self, index):
         #  places hosts and servers in a circle --- should probably change
-        angle = index * 2 * np.pi / (self.H + self.C)
+        angle = index * 2 * np.pi / (self.env.H + self.env.C)
         center_x, center_y = self.screen_width // 2, self.screen_height // 2
         radius = min(self.screen_width, self.screen_height) // 3
         x = int(center_x + radius * np.cos(angle))
         y = int(center_y + radius * np.sin(angle))
         return (x, y)
+
+    def get_button_position(self, action, host):
+        height = self.screen_height//2 + self.button_height * (self.env.actions.index(action))
+        width = 130 + self.button_width * host
+        return (width, height)
         
-    def draw_text(self, text, position, color=(255, 255, 255)):
-        font = pygame.font.Font(None, 36)
+    def draw_text(self, text, position, color=(0, 0, 0), align="center"):
+        font = pygame.font.Font(None, 30)
         text_surface = font.render(text, True, color)
-        text_rect = text_surface.get_rect(center=position)
+        if align == "center":
+            text_rect = text_surface.get_rect(center=position)
+        elif align == "midleft":
+            text_rect = text_surface.get_rect(midleft=position)
         self.screen.blit(text_surface, text_rect)
 

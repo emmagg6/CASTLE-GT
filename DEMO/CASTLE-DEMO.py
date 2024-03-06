@@ -1,10 +1,10 @@
-import pyspiel
+# import pyspiel
 import random
 import numpy as np
 import pygame
 import sys
 
-from pygameENV import Environment
+from pygameENV import Environment, PyGameInterface
 from osGAME import APIState
 from osGAME import APIGame
 
@@ -20,10 +20,10 @@ HOST_RADIUS = 20
 SERVER_SIZE = 30
 
 WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-# Initialize screen
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+# # Initialize screen
+# screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Network Security Game")
 clock = pygame.time.Clock()
 
@@ -50,9 +50,10 @@ env = Environment(player_count, host_count, critical_count,
 
 ################ GAME ################
 security_game = APIGame(env, max_rounds=5)
+game_interface = PyGameInterface(env)
 
 state = security_game.new_initial_state()
-env.draw_network()
+game_interface.draw_network()
 
 action_blue = None
 target_blue = None
@@ -61,14 +62,21 @@ target_red = None
 
 running = True
 
+
 while running and not state.is_terminal():
     # 'draw'' the environment and available actions
-    env.draw_network()
+    # env.draw_network()
+
     if state.current_player() == 0:
-        env.draw_text("Your turn, select an action", (WIDTH // 2, HEIGHT - 50))
-        actions_targets = state.legal_actions_on_hosts(0)
-        for idx, (action, targets) in enumerate(actions_targets.items()):
-            env.draw_text(f"{idx + 1}: {action} -> {targets}", (WIDTH // 2, HEIGHT - 30 * (idx + 2)))
+        game_interface.draw_text("Your turn, select an action", (20, HEIGHT//2-50), align='midleft')
+        for idx, action in enumerate(env.actions):
+            game_interface.draw_text(f"{action}", (20, HEIGHT//2 + 30 * (idx)), align="midleft")
+            for host_idx in range(env.H):
+                #TODO: if action is legal, color = Green, else color = Gray
+                if host_idx not in state.legal_actions_on_hosts(0).get(action, []):
+                    game_interface.draw_text(f"{host_idx}", game_interface.get_button_position(action, host_idx), align="center", color = GRAY)
+                else:
+                    game_interface.draw_text(f"{host_idx}", game_interface.get_button_position(action, host_idx), align="center", color = GREEN)
     pygame.display.flip()
     
     # Handle Pygame events
@@ -79,16 +87,28 @@ while running and not state.is_terminal():
             mouse_pos = pygame.mouse.get_pos()
             # need to implement the logic to check if the mouse click is on one of the action texts
             # once obtained, set action_blue to that action and ask for the host to target
-            
+            for action in env.actions:
+                for host_idx in range(env.H):
+                    #check if button has been pressed
+                    button_width, button_height = game_interface.get_button_position(action, host_idx)
+                    if button_width-game_interface.button_width//2 <= mouse_pos[0] <= button_width+game_interface.button_width//2 and button_height-game_interface.button_height//2 <= mouse_pos[1] <= button_height+game_interface.button_height//2: 
+                    #check if the action chosen is valid
+                        if host_idx in state.legal_actions_on_hosts(0).get(action, []):
+                            #if so, we apply the action
+                            action_blue = action
+                            target_blue = host_idx
+                            state._current_player = 1
             # example: action_blue, target_blue = get_action_and_target_from_mouse_position(mouse_pos, actions_targets)
             
-        # get Red agent's random everything
-        elif state.current_player() == 1:
-            actions_targets = state.legal_actions_on_hosts(1)
-            action_red = random.choice(list(actions_targets.keys()))
-            target_red = random.choice(actions_targets[action_red])
+    # get Red agent's random everything
+    if state.current_player() == 1:
+        actions_targets = state.legal_actions_on_hosts(1)
+        action_red = random.choice(list(actions_targets.keys()))
+        target_red = random.choice(actions_targets[action_red])
     
     if action_blue is not None and target_blue is not None:
         state.apply_actions((action_blue, action_red), (target_blue, target_red))
         action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
+        game_interface.draw_network()
+        state._current_player = 0
 print(f"End of Game. Resulting Returns: {state.returns()}")
