@@ -90,7 +90,7 @@ class Environment:
                             if neighbor < self.H :
                                 self.h[neighbor] = 1
                             else :
-                                self.c[neighbor - self.H - 1] = 1
+                                self.c[neighbor - self.H] = 1
 
         print(f"Updated Connection Matrix:\n {self.O}")
         print(f"Updated Hosts Infected:\n {self.h}")
@@ -197,6 +197,24 @@ class PyGameInterface:
 
         # Draw the network based on the connection matrix
         for i in range(self.env.H + self.env.C):
+
+            if i < self.env.H:  # It's a host
+                color = self.infected_color if self.env.h[i] == 1 else self.host_color
+                position = self.get_node_position(i)
+            else:  # It's a server
+                color = self.server_color if self.env.c[i - self.env.H] == 0 else self.infected_color  #  server color based on infection status
+                position = self.get_node_position(i)
+
+            # Creating connections (or lack from original)
+            for j in range(self.env.H + self.env.C):
+                neighbor_position = self.get_node_position(j)
+                if self.env.O[i, j] == 1:
+                    pygame.draw.line(self.screen, self.connection_color,
+                                     position, neighbor_position, 2)
+                elif self.env.O_original[i, j] == 1:  # grey lines for original connections that are now disconnected
+                    pygame.draw.line(self.screen, self.disconnected_color,
+                                     position, neighbor_position, 2)
+        for i in range(self.env.H + self.env.C):
             # Determine the color and shape of the node
             if i < self.env.H:  # It's a host
                 color = self.infected_color if self.env.h[i] == 1 else self.host_color
@@ -208,19 +226,9 @@ class PyGameInterface:
                 pygame.draw.rect(self.screen, color, (position[0] - self.server_size // 2,
                                                       position[1] - self.server_size // 2,
                                                       self.server_size, self.server_size))
-
-            # Creating connections (or lack from original)
-            for j in range(self.env.H + self.env.C):
-                neighbor_position = self.get_node_position(j)
-                if self.env.O[i, j] == 1:
-                    pygame.draw.line(self.screen, self.connection_color,
-                                     position, neighbor_position, 1)
-                elif self.env.O_original[i, j] == 1:  # grey lines for original connections that are now disconnected
-                    pygame.draw.line(self.screen, self.disconnected_color,
-                                     position, neighbor_position, 1)
-                    
+     
             # Enumerating Hosts / Servers
-            text_surface = self.font.render(str(i if i < self.env.H else i - self.env.H), True, self.text_color)
+            text_surface = self.font.render("H"+ str(i) if i < self.env.H else "S"+ str(i - self.env.H), True, self.text_color)
             text_rect = text_surface.get_rect(center=position)
             self.screen.blit(text_surface, text_rect)
 

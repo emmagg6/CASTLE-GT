@@ -1,4 +1,4 @@
-import pyspiel
+# import pyspiel
 import random
 import numpy as np
 import pygame
@@ -51,12 +51,13 @@ class APIState:
         # print(f"Actions: {actions[0]}, {actions[1]}")
         # print(f"Hosts: {host_targets[0]}, {host_targets[1]}")
         # Apply the joint action
-        if not self._is_terminal:
+
+        if not self.is_terminal():
             self.take_actions(actions[0], actions[1], host_targets[0], host_targets[1])
 
     def is_terminal(self):
         if np.all(self._environment.h == 1) and np.all(self._environment.c == 1) : 
-            self._is_terminal == True
+            self._is_terminal = True
         return self._is_terminal
 
     def returns(self):
@@ -72,33 +73,33 @@ class APIState:
 class APIGame:
     def __init__(self, environment, max_rounds=10):
         #  the game type
-        game_type = pyspiel.GameType(
-            short_name="api_game",
-            long_name="API Game",
-            dynamics=pyspiel.GameType.Dynamics.SEQUENTIAL,
-            chance_mode=pyspiel.GameType.ChanceMode.DETERMINISTIC,
-            information=pyspiel.GameType.Information.IMPERFECT_INFORMATION,
-            utility=pyspiel.GameType.Utility.GENERAL_SUM,
-            reward_model=pyspiel.GameType.RewardModel.TERMINAL,
-            max_num_players=2,
-            min_num_players=2,
-            provides_information_state_string=True,
-            provides_information_state_tensor=False,
-            provides_observation_string=True,
-            provides_observation_tensor=False,
-            parameter_specification={}
-        )
+        # game_type = pyspiel.GameType(
+        #     short_name="api_game",
+        #     long_name="API Game",
+        #     dynamics=pyspiel.GameType.Dynamics.SEQUENTIAL,
+        #     chance_mode=pyspiel.GameType.ChanceMode.DETERMINISTIC,
+        #     information=pyspiel.GameType.Information.IMPERFECT_INFORMATION,
+        #     utility=pyspiel.GameType.Utility.GENERAL_SUM,
+        #     reward_model=pyspiel.GameType.RewardModel.TERMINAL,
+        #     max_num_players=2,
+        #     min_num_players=2,
+        #     provides_information_state_string=True,
+        #     provides_information_state_tensor=False,
+        #     provides_observation_string=True,
+        #     provides_observation_tensor=False,
+        #     parameter_specification={}
+        # )
         
-        # #  the game information
-        game_info = pyspiel.GameInfo(
-            num_distinct_actions=3,
-            max_chance_outcomes=0,
-            num_players=2,
-            min_utility=-float('inf'),  #  minimum possible payoff
-            max_utility=float('inf'),  # maximum possible payoff
-            utility_sum=None,  #  could be None since it's not constant-sum or zero-sum ?
-            max_game_length=max_rounds
-        )
+        # # #  the game information
+        # game_info = pyspiel.GameInfo(
+        #     num_distinct_actions=3,
+        #     max_chance_outcomes=0,
+        #     num_players=2,
+        #     min_utility=-float('inf'),  #  minimum possible payoff
+        #     max_utility=float('inf'),  # maximum possible payoff
+        #     utility_sum=None,  #  could be None since it's not constant-sum or zero-sum ?
+        #     max_game_length=max_rounds
+        # )
         
         # super().__init__(game_type, game_info)  # not required if APIGame is not supposed t extend any other class
         self._environment = environment

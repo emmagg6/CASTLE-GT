@@ -26,7 +26,6 @@ WIDTH, HEIGHT = 800, 600
 # screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Network Security Game")
 clock = pygame.time.Clock()
-
 ################ INITIALIZATOINS ###############
 player_count = 2
 host_count = 3
@@ -63,9 +62,10 @@ target_red = None
 running = True
 
 
-while running and not state.is_terminal():
+while running:
     # 'draw'' the environment and available actions
     # env.draw_network()
+
 
     if state.current_player() == 0:
         ######## HEADING #########
@@ -113,14 +113,21 @@ while running and not state.is_terminal():
     if action_blue is not None and target_blue is not None:
         state.apply_actions((action_blue, action_red), (target_blue, target_red))
 
-        game_interface.draw_text(f"Selected {action_blue} on Host {target_blue}", (WIDTH//4, HEIGHT//10), align='midleft', color=GRAY)
-        pygame.time.wait(100)
-        game_interface.draw_text(f"Adversary chose {action_red} on Host {target_red}", (WIDTH//4, HEIGHT//10 + 20), align='midleft', color=GRAY)
-        pygame.time.wait(100)
-
         game_interface.draw_network()
+
+        game_interface.draw_text(f"Selected {action_blue} on Host {target_blue}", (20, HEIGHT//5), align='midleft', color=GRAY)
+
+        game_interface.draw_text(f"Adversary chose {action_red} on Host {target_red}", (20, HEIGHT//5 + 20), align='midleft', color=GRAY)
+
+        game_interface.draw_text(f"Increased load cost is {env.l[target_blue]:.2f} on Host {target_blue}", (20, HEIGHT//5 + 40), align='midleft', color=GRAY)
+
         action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
         state._current_player = 0
 
+    if state.is_terminal():
+        #TODO: FIX this error message
+        #display goodbye message
+        game_interface.draw_text(f"End of Game. Resulting Returns: {state.returns()[0]:.2f}, {state.returns()[1]:.2f}", (WIDTH//2, HEIGHT//2), align="center", font_size= 50, color=RED)
+        break
 
 print(f"End of Game. Resulting Returns: {state.returns()}")
