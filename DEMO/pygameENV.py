@@ -180,6 +180,12 @@ class PyGameInterface:
         pygame.font.init()
         self.font = pygame.font.Font(None, 30)
 
+        ### Arranging the hosts / servers ##
+        self.host_radius = min(self.screen_width, self.screen_height) // 30
+        self.host_center = (self.screen_width // 2 + self.screen_width //10, self.screen_height // 2)
+        self.server_start_po = (self.host_center[0] + self.host_radius + 200, 
+                                self.screen_height// 2 - (self.env.C - 1)*50)
+
         ####### PYGAME SCREEN ######
         pygame.init()
         self.screen = pygame.display.set_mode((self.screen_width, self.screen_height))
@@ -221,22 +227,36 @@ class PyGameInterface:
         # display update
         pygame.display.flip()
 
+    # def get_node_position(self, index):
+    #     #  places hosts and servers in a circle --- should probably change
+    #     angle = index * 2 * np.pi / (self.env.H + self.env.C)
+    #     center_x, center_y = self.screen_width // 2, self.screen_height // 2
+    #     radius = min(self.screen_width, self.screen_height) // 3
+    #     x = int(center_x + radius * np.cos(angle))
+    #     y = int(center_y + radius * np.sin(angle))
+    #     return (x, y)
     def get_node_position(self, index):
-        #  places hosts and servers in a circle --- should probably change
-        angle = index * 2 * np.pi / (self.env.H + self.env.C)
-        center_x, center_y = self.screen_width // 2, self.screen_height // 2
-        radius = min(self.screen_width, self.screen_height) // 3
-        x = int(center_x + radius * np.cos(angle))
-        y = int(center_y + radius * np.sin(angle))
+        if index < self.env.H:  # It's a host
+            # Arrange hosts in a circle at the center
+            angle = index * 2 * np.pi / self.env.H + np.pi
+            x = int(self.host_center[0] + self.host_radius * np.cos(angle) * 5)
+            y = int(self.host_center[1] + self.host_radius * np.sin(angle) * 5)
+        else:  # It's a server
+            # Arrange servers in a vertical line to the right
+            server_index = index - self.env.H
+            x = self.server_start_po[0] 
+            y = self.server_start_po[1] + server_index * (self.server_size + 50)  # 50 is spacing between servers
+
         return (x, y)
+
 
     def get_button_position(self, action, host):
         height = self.screen_height//2 + self.button_height * (self.env.actions.index(action))
         width = 130 + self.button_width * host
         return (width, height)
         
-    def draw_text(self, text, position, color=(0, 0, 0), align="center"):
-        font = pygame.font.Font(None, 30)
+    def draw_text(self, text, position, color=(0, 0, 0), align="center", font_size = 25):
+        font = pygame.font.Font(None, font_size)
         text_surface = font.render(text, True, color)
         if align == "center":
             text_rect = text_surface.get_rect(center=position)

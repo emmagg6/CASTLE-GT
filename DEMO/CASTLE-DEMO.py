@@ -15,7 +15,7 @@ pygame.init()
 GRAY = (200, 200, 200)
 RED = (255, 0, 0)
 BLACK = (0, 0, 0)
-GREEN = (0, 255, 0)
+GREEN = (0, 120, 0)
 HOST_RADIUS = 20
 SERVER_SIZE = 30
 
@@ -68,11 +68,16 @@ while running and not state.is_terminal():
     # env.draw_network()
 
     if state.current_player() == 0:
-        game_interface.draw_text("Your turn, select an action", (20, HEIGHT//2-50), align='midleft')
+        ######## HEADING #########
+        game_interface.draw_text("Security Game", (WIDTH//2, HEIGHT//20), align='center', font_size = 50)
+        game_interface.draw_text("Goal: Prevent the infection of your network while minimizing operational costs.", 
+                                (WIDTH//2, HEIGHT//20 + 30), align = "center", color = GREEN)
+
+        ######## ACTIONS WITH HOST BUTTONS ##########
+        game_interface.draw_text("Available Hosts for Each Action", (20, HEIGHT//2 - 50), align='midleft')
         for idx, action in enumerate(env.actions):
             game_interface.draw_text(f"{action}", (20, HEIGHT//2 + 30 * (idx)), align="midleft")
             for host_idx in range(env.H):
-                #TODO: if action is legal, color = Green, else color = Gray
                 if host_idx not in state.legal_actions_on_hosts(0).get(action, []):
                     game_interface.draw_text(f"{host_idx}", game_interface.get_button_position(action, host_idx), align="center", color = GRAY)
                 else:
@@ -98,8 +103,7 @@ while running and not state.is_terminal():
                             action_blue = action
                             target_blue = host_idx
                             state._current_player = 1
-            # example: action_blue, target_blue = get_action_and_target_from_mouse_position(mouse_pos, actions_targets)
-            
+   
     # get Red agent's random everything
     if state.current_player() == 1:
         actions_targets = state.legal_actions_on_hosts(1)
@@ -108,7 +112,15 @@ while running and not state.is_terminal():
     
     if action_blue is not None and target_blue is not None:
         state.apply_actions((action_blue, action_red), (target_blue, target_red))
-        action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
+
+        game_interface.draw_text(f"Selected {action_blue} on Host {target_blue}", (WIDTH//4, HEIGHT//10), align='midleft', color=GRAY)
+        pygame.time.wait(100)
+        game_interface.draw_text(f"Adversary chose {action_red} on Host {target_red}", (WIDTH//4, HEIGHT//10 + 20), align='midleft', color=GRAY)
+        pygame.time.wait(100)
+
         game_interface.draw_network()
+        action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
         state._current_player = 0
+
+
 print(f"End of Game. Resulting Returns: {state.returns()}")
