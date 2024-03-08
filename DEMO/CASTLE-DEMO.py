@@ -103,6 +103,22 @@ while running:
                             action_blue = action
                             target_blue = host_idx
                             state._current_player = 1
+
+    ######## HEADING #########
+    game_interface.draw_text("Security Game", (WIDTH//2, HEIGHT//20), align='center', font_size = 50)
+    game_interface.draw_text("Goal: Prevent the infection of your network while minimizing operational costs.", 
+                            (WIDTH//2, HEIGHT//20 + 30), align = "center", color = GREEN)
+
+    ######## ACTIONS WITH HOST BUTTONS ##########
+    game_interface.draw_text("Available Hosts for Each Action", (20, HEIGHT//2 - 50), align='midleft')
+    for idx, action in enumerate(env.actions):
+        game_interface.draw_text(f"{action}", (20, HEIGHT//2 + 30 * (idx)), align="midleft")
+        for host_idx in range(env.H):
+            if host_idx not in state.legal_actions_on_hosts(0).get(action, []):
+                game_interface.draw_text(f"{host_idx}", game_interface.get_button_position(action, host_idx), align="center", color = GRAY)
+            else:
+                game_interface.draw_text(f"{host_idx}", game_interface.get_button_position(action, host_idx), align="center", color = GREEN)
+
    
     # get Red agent's random everything
     if state.current_player() == 1:
@@ -115,19 +131,24 @@ while running:
 
         game_interface.draw_network()
 
-        game_interface.draw_text(f"Selected {action_blue} on Host {target_blue}", (20, HEIGHT//5), align='midleft', color=GRAY)
-
+        game_interface.draw_text(f"Selected {action_blue} on Host {target_blue} incurring a load change of {env.l[target_blue]:.2f}", (20, HEIGHT//5), align='midleft', color=GRAY)
+        pygame.display.flip()
+        pygame.time.delay(1000) 
         game_interface.draw_text(f"Adversary chose {action_red} on Host {target_red}", (20, HEIGHT//5 + 20), align='midleft', color=GRAY)
-
+        pygame.display.flip()
+        pygame.time.delay(1000) 
         game_interface.draw_text(f"Increased load cost is {env.l[target_blue]:.2f} on Host {target_blue}", (20, HEIGHT//5 + 40), align='midleft', color=GRAY)
-
+        pygame.display.flip()
+        pygame.time.delay(1000) 
         action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
         state._current_player = 0
 
     if state.is_terminal():
-        #TODO: FIX this error message
-        #display goodbye message
+    #     #TODO: FIX this error message
+    #     #display goodbye message
         game_interface.draw_text(f"End of Game. Resulting Returns: {state.returns()[0]:.2f}, {state.returns()[1]:.2f}", (WIDTH//2, HEIGHT//2), align="center", font_size= 50, color=RED)
+        pygame.display.flip()
+        pygame.time.delay(1000) 
         break
 
 print(f"End of Game. Resulting Returns: {state.returns()}")
