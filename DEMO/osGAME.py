@@ -1,4 +1,4 @@
-# import pyspiel
+import pyspiel
 import random
 import numpy as np
 import pygame
@@ -11,6 +11,7 @@ class APIState:
         self._is_terminal = False
         self._round = 0
         self._returns = [0, 0]  # format: [Blue, Red]
+        self._rewards = [0, 0] # formet: [Blue, Red]
         self._current_player = 0  # Blue starts
 
     def clone(self):
@@ -28,35 +29,54 @@ class APIState:
     def current_player(self):
         return pyspiel.PlayerId.TERMINAL if self._is_terminal else self._current_player
 
-    def take_actions(self, action_blue, action_red, host_blue, host_red):
-        print(f"Applying actions: {action_blue}, {action_red}")
-        print(f"To the Hosts: {host_blue}, {host_red}")
+    def take_action_blue(self, a, h):
+        print(f"Blue is applying: {a}")
+        print(f"To the Host: {h}")
 
-        payoff_blue, payoff_red = self._environment.interact(action_blue, [host_blue], action_red, [host_red])
-        print(f"Payoffs: {payoff_blue}, {payoff_red}")
-
-        self._returns[0] += payoff_blue
-        self._returns[1] += payoff_red
-
+        self._environment.interact_blue(a, h)
         self._current_player = 1 - self._current_player
 
-        self._round += 1
-        if self._round >= 10:
-            self._is_terminal = True
+
+    def take_action_red(self, a, h):
+        print(f"Red is applying: {a}")
+        print(f"To the Host: {h}")
+
+        self._environment.interact_red(a, h)
+        self._current_player = 1 - self._current_player
+
+    def payoff(self) :
+        reward_blue, reward_red = self._environment.payoffs()
+        self._rewards[0] = reward_blue
+        self._rewards[1] = reward_red
+        self._returns[0] += reward_blue
+        self._returns[1] += reward_red
+        return self._rewards
+    
+    def rewards(self) :
+        return self._rewards
 
     def legal_actions_on_hosts(self, player):
         return self._environment.legal_actions_on_hosts(player)
 
-    def apply_actions(self, actions, host_targets):
+    def apply_action(self, action, host_target):
         # print(f"Actions: {actions[0]}, {actions[1]}")
         # print(f"Hosts: {host_targets[0]}, {host_targets[1]}")
-        # Apply the joint action
+        # Apply the sequential just incase the host is no longer infected -> if red choses spread, nothing happens
 
         if not self.is_terminal():
-            self.take_actions(actions[0], actions[1], host_targets[0], host_targets[1])
+            if self._current_player == 0 :
+                self.take_action_blue(action, host_target)
+            else :
+                self.take_action_red(action, host_target)
+
+        self._round += 1
+        if self._round // 2 >= 20 : # round is when EACH agent has taken an action
+            self._is_terminal = True
 
     def is_terminal(self):
         if np.all(self._environment.h == 1) and np.all(self._environment.c == 1) : 
+            self._is_terminal = True
+        if np.all(self._environment.h == 0) : 
             self._is_terminal = True
         return self._is_terminal
 
@@ -73,33 +93,33 @@ class APIState:
 class APIGame:
     def __init__(self, environment, max_rounds=10):
         #  the game type
-        # game_type = pyspiel.GameType(
-        #     short_name="api_game",
-        #     long_name="API Game",
-        #     dynamics=pyspiel.GameType.Dynamics.SEQUENTIAL,
-        #     chance_mode=pyspiel.GameType.ChanceMode.DETERMINISTIC,
-        #     information=pyspiel.GameType.Information.IMPERFECT_INFORMATION,
-        #     utility=pyspiel.GameType.Utility.GENERAL_SUM,
-        #     reward_model=pyspiel.GameType.RewardModel.TERMINAL,
-        #     max_num_players=2,
-        #     min_num_players=2,
-        #     provides_information_state_string=True,
-        #     provides_information_state_tensor=False,
-        #     provides_observation_string=True,
-        #     provides_observation_tensor=False,
-        #     parameter_specification={}
-        # )
+        game_type = pyspiel.GameType(
+            short_name="api_game",
+            long_name="API Game",
+            dynamics=pyspiel.GameType.Dynamics.SEQUENTIAL,
+            chance_mode=pyspiel.GameType.ChanceMode.DETERMINISTIC,
+            information=pyspiel.GameType.Information.IMPERFECT_INFORMATION,
+            utility=pyspiel.GameType.Utility.GENERAL_SUM,
+            reward_model=pyspiel.GameType.RewardModel.TERMINAL,
+            max_num_players=2,
+            min_num_players=2,
+            provides_information_state_string=True,
+            provides_information_state_tensor=False,
+            provides_observation_string=True,
+            provides_observation_tensor=False,
+            parameter_specification={}
+        )
         
-        # # #  the game information
-        # game_info = pyspiel.GameInfo(
-        #     num_distinct_actions=3,
-        #     max_chance_outcomes=0,
-        #     num_players=2,
-        #     min_utility=-float('inf'),  #  minimum possible payoff
-        #     max_utility=float('inf'),  # maximum possible payoff
-        #     utility_sum=None,  #  could be None since it's not constant-sum or zero-sum ?
-        #     max_game_length=max_rounds
-        # )
+        # #  the game information
+        game_info = pyspiel.GameInfo(
+            num_distinct_actions=7,
+            max_chance_outcomes=0,
+            num_players=2,
+            min_utility=-float('inf'),  #  minimum possible payoff
+            max_utility=float('inf'),  # maximum possible payoff
+            utility_sum=None,  #  could be None since it's not constant-sum or zero-sum ?
+            max_game_length=max_rounds
+        )
         
         # super().__init__(game_type, game_info)  # not required if APIGame is not supposed t extend any other class
         self._environment = environment
