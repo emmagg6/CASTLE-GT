@@ -99,36 +99,4 @@ Payoff for Blue Agent = ( # uninfected - good ) - ( Cost on operations )
 Payoff for Red Agent = ( utility = infected )
                      = ŵ_1 * Delta(h) + ŵ_2 * Delta(c)
 
-
-## Current Issues with Pygame Interface / Dynamics
-
-1. Complete the playing loop with the interaction with the pygame interface
-2. Fix interface display of available actions and the hosts available for those actions for the user.
-
-
-
-    if action_blue is not None and target_blue is not None:
-        state.apply_actions((action_blue, action_red), (target_blue, target_red))
-
-        game_interface.draw_network()
-
-        game_interface.draw_text(f"{action_blue} selection on Host {target_blue}", 
-                                 (20, HEIGHT//5), align='midleft', color=GREY)
-        game_interface.draw_text(f"change in network connectivity of {env.Delta_connections} induced",
-                                 (50 HEIGHT//5 + 20), align='midleft', color=LIGHTGREY, font='italic', font_size=15)
-        game_interface.draw_text(f"a change in load of {env.l[target_blue]:.2f}  on the connections to the host",
-                                 (50, HEIGHT//5 + 33), align='midleft', color=LIGHTGREY, font='italic', font_size=15)
-        game_interface.draw_text(f"Adversary chose: {action_red} on Host {target_red}", (20, HEIGHT//5 + 50), align='midleft', color=GREY)
-        action_blue, target_blue, action_red, target_red = None, None, None, None  # Reset actions and targets
-        state._current_player = 0
-
-
-        ############## Display Round Score #############
-        game_interface.draw_text(f"Round Score (payoff)",
-                                 (WIDTH - 100, HEIGHT//5), align='center', font='bold', color=BLACK)
-        game_interface.draw_text(f"( {env.reward_blue:.2f}, ",
-                                 (WIDTH - 200, HEIGHT//5 + 20), align='center', font='bold', color=BLUE_agent)
-        game_interface.draw_text(f"{env.reward_red} )",
-                                 (WIDTH - 75, HEIGHT//5 + 20), align='center', font='bold', color=RED_agent)
-
         ############ Update Running Return ############
