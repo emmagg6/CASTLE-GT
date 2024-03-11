@@ -51,9 +51,7 @@ If the blue agent takes the action 'Unisolate', the agent then selects the host 
 If the blue agent takes the action 'Restore', the agent then selects an infected hosts to applly the action to, and then the host
 will be 'uninfected'
 
-The load will be updated to be the cos(1/2 * pi * (number of neighbors / total number of hosts)).
-
-The host step connections to critical servers will be updated to be the (1 - ((minimum number of step connections to critical servers for the host) - 1)/(number of servers)).
+The load will be updated to be the .
 
 If the red agent takes the action 'Neutral', the infected hosts will not change.
 
@@ -69,8 +67,6 @@ h - Hosts nfected
 C - Total Critical Servers
 
 c - Critical Servers Infected
-
-psi - Host step connections to critical servers (in the DEMO these are all set to 0 as to not impact the cost)
 
 l = load on host
 
@@ -94,9 +90,8 @@ Omega - Connection Matrix: Host and Critical Server, (binary)
 ### PAYOFFS :
 
 Payoff for Blue Agent = ( # uninfected - good ) - ( Cost on operations )
-                      =  w_1 * Delta(H - h) + w_2 * Delta(C - c) - ( w_3 * Delta(psi) + w_4 * Delta(l) )
+                      =  w_1 * Delta(H - h) + w_2 * Delta(C - c) - ( w_3 * Delta(l) )
 
 Payoff for Red Agent = ( utility = infected )
                      = ŵ_1 * Delta(h) + ŵ_2 * Delta(c)
 
-        ############ Update Running Return ############
