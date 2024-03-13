@@ -15,7 +15,7 @@ At the moment, the red agent will be a tabular Q-learning agent and the blue age
 
 ### ACTION SPACE :
 
-Blue Agent Actions: {'Neutral': 0, 'Block': 1, 'Isolate': 2, 'Unblock': 3, 'Unisolate': 4}
+Blue Agent Actions: {'Neutral': 0, 'Block': 1, 'Isolate': 2, 'Unblock': 3, 'Unisolate': 4, 'Restore': 5}
 
 Red Agent Actions: {'Neutral': 0, 'Spread': 1}
 
@@ -49,9 +49,10 @@ If the blue agent takes the action 'Unblock', the agent then selects the host to
 
 If the blue agent takes the action 'Unisolate', the agent then selects the host to apply the action to, and then any connection between the host and its critical neighbours that are different than the original connection matrix gets restored as a connection.
 
-The load will be updated to be the cos(1/2 * pi * (number of neighbors / total number of hosts)).
+If the blue agent takes the action 'Restore', the agent then selects an infected hosts to applly the action to, and then the host
+will be 'uninfected'
 
-The host step connections to critical servers will be updated to be the (1 - ((minimum number of step connections to critical servers for the host) - 1)/(number of servers)).
+The load will be updated to be the .
 
 If the red agent takes the action 'Neutral', the infected hosts will not change.
 
@@ -67,8 +68,6 @@ h - Hosts nfected
 C - Total Critical Servers
 
 c - Critical Servers Infected
-
-psi - Host step connections to critical servers
 
 l = load on host
 
@@ -86,9 +85,14 @@ Omega - Connection Matrix: Host and Critical Server, (binary)
 
 'Spread' - spread the infection of select host's neighbor in the network (can be changed to a selection of neighbors)
 
+'Restore' - 'uninfects' the host
+
 
 ### PAYOFFS :
 
-Payoff for Blue Agent = w_1 * Delta(H - h) + w_2 * Delta(C - c) - ( w_3 * Delta(psi) + w_4 * Delta(l) )
+Payoff for Blue Agent = ( # uninfected - good ) - ( Cost on operations )
+                      =  w_1 * Delta(H - h) + w_2 * Delta(C - c) - ( w_3 * Delta(l) )
 
-Payoff for Red Agent = ŵ_1 * Delta(h) + ŵ_2 * Delta(c)
+Payoff for Red Agent = ( utility = infected )
+                     = ŵ_1 * Delta(h) + ŵ_2 * Delta(c)
+
