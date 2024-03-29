@@ -4,7 +4,7 @@ import numpy as np
 import pygame
 import sys
 
-from pygameENV import Environment
+from DEMO.environment import Environment
 from osPYGAME import PyGameInterface
 from osGAME import APIState
 from osGAME import APIGame
