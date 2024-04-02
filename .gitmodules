@@ -1,0 +1,3 @@
+[submodule "MARL/cage-challenge-4"]
+	path = MARL/cage-challenge-4
+	url = https://github.com/cage-challenge/cage-challenge-4
