@@ -1,0 +1,8 @@
+## RL Folder for CCE in Single Agent, Dynamic Environment of DARPA's CASTLE CC2 security network.
+
+
+CC2 is decribed in the CybORG/README.md and shows an adversarial, dynamic network environment with a consistant topology and single-time actions. 
+
+
+This \texbf{RL} folder contains a 'cc2-agent' folder which is the 'generalized-agent' folder in our private repo. Also, the cotrain
+ing framework that works is in the folder 'cotraining-framework-2'. A 'fresh' import of CybORG from CC2 is added as a submodule from the CASTLE CHALLENGE 2 repository in the 'CyBORG' folder.
