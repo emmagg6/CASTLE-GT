@@ -1,6 +1,0 @@
-[submodule "/Users/emmagraham/Documents/GitHub/CASTLE-GT/RL/CC20CybORG"]
-	path = /Users/emmagraham/Documents/GitHub/CASTLE-GT/RL/CC2-CybORG
-	url = https://github.com/cage-challenge/cage-challenge-2.git
-[submodule "RL/RL/CC2-CybORG"]
-	path = RL/RL/CC2-CybORG
-	url = https://github.com/cage-challenge/cage-challenge-2
