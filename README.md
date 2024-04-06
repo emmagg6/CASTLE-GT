@@ -1,5 +1,5 @@
 # CASTLE-GT
-Game Theory Model for heuristic of the CASTLE MARL interaction in adversarial security networks.
+### Game Theory Model for heuristic of the CASTLE MARL interaction in adversarial security networks.
 
 From most to least basic:
 
