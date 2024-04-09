@@ -13,8 +13,12 @@ import os
 
 class GenericAgent(PPOAgent):
     def __init__(self, model_dir_PPO, model_file_PPO="model.pth", model_dir_GT, model_file_GT="model.pth"):
-        self.model_dir = model_dir
-        self.model_file = model_file
+        self.model_dir_ppo = model_dir_PPO
+        self.model_file_ppo = model_file_PPO
+
+        self.model_dir_gt = model_dir_GT
+        self.model_file_gt = model_file_GT
+
         self.action_space = [133, 134, 135, 139, 3, 4, 5, 9, 16, 17, 18, 22, 11, 12, 13, 14, 141, 142, 143, 144,
                              132, 2, 15, 24, 25, 26, 27]
         self.end_episode()
@@ -54,10 +58,30 @@ class GenericAgent(PPOAgent):
         return action
     
     def get_action_cce():
+        '''
+        Get the action from the CCE agent.
+
+        Returns:
+            action: optimal action from the CCE policy
+        '''
         #TODO
 
+
+
+
     def select_action(): 
+        '''
+        Select action from a combination of the PPO and CCE action-selection
+        policies -- depending on whether the equilibrium approx has been 
+        statistically estabilished as valid. 
+
+        Returns:
+            action: optimal action from either PPO or CCE policy
+        '''
         # TODO
+
+
+
 
     def load_sleep(self):
         return BlueSleepAgent()
