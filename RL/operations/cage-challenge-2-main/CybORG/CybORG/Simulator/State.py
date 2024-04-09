@@ -1,3 +1,7 @@
+'''
+A few changes made to the original code
+'''
+
 ## The following code contains work of the United States Government and is not subject to domestic copyright protection under 17 USC § 105.
 ## Additionally, we waive copyright and related rights in the utilized code worldwide through the CC0 1.0 Universal public domain dedication.
 import copy
@@ -112,7 +116,7 @@ class State:
         maximum_subnet_size = max([scenario.get_subnet_size(i) for i in scenario.subnets])
         #print("State: maximum_subnet_size: ", maximum_subnet_size)
         #maximum_subnet_size = 60
-        print("State: maximum_subnet_size: ", maximum_subnet_size)
+        # print("State: maximum_subnet_size: ", maximum_subnet_size)
 
         #subnets_cidrs = sample(
         #    list(IPv4Network("10.0.0.0/16").subnets(new_prefix=32 - max(int(log2(maximum_subnet_size + 5)), 4))),
@@ -124,7 +128,7 @@ class State:
         #subnets_cidrs = sample(
         #    list(IPv4Network("10.0.0.0/16").subnets(new_prefix=24)),
         #    len(scenario.subnets))
-        print("subnets_cidrs:", subnets_cidrs)
+        # print("subnets_cidrs:", subnets_cidrs)
 
         for subnet_name in scenario.subnets:
             #subnet_cidr = choice(list(subnets_cidrs[count].subnets(
@@ -134,8 +138,8 @@ class State:
                 new_prefix=32 - max(ceil(log2(scenario.get_subnet_size(subnet_name))), 4))))
 
             #subnet_cidr = choice(list(subnets_cidrs[count].subnets(new_prefix=24)))
-            print(ceil(log2(scenario.get_subnet_size(subnet_name))))
-            print(subnet_cidr)
+            # print(ceil(log2(scenario.get_subnet_size(subnet_name))))
+            # print(subnet_cidr)
 
             count += 1
             self.subnet_name_to_cidr[subnet_name] = subnet_cidr

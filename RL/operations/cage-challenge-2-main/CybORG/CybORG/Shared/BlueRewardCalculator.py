@@ -8,8 +8,8 @@ from CybORG.Shared.Actions import Restore
 from CybORG.Shared.Actions.Action import Action
 
 
-HostReward = namedtuple('HostReward','confidentiality availability operations')
-#HostReward = namedtuple('HostReward','confidentiality availability')
+# HostReward = namedtuple('HostReward','confidentiality availability operations')
+HostReward = namedtuple('HostReward','confidentiality availability')
 
 class ConfidentialityRewardCalculator(RewardCalculator):
     # Calculate punishment for defending agent based on compromise of hosts/data

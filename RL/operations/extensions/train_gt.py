@@ -20,7 +20,7 @@ def train(env, input_dims, action_space,
           max_episodes, max_timesteps, update_timestep, K_epochs, eps_clip,
           gamma, lr, betas, ckpt_folder, print_interval=10, save_interval=100, start_actions=[]):
 
-
+    print('Training started')
 
     agent = GTAgent(input_dims, action_space, lr, betas, gamma, K_epochs, eps_clip, start_actions=start_actions)
     cce = CCE()
@@ -51,6 +51,7 @@ def train(env, input_dims, action_space,
         agent.end_episode()
 
         if i_episode % save_interval == 0:
+            print(f'Episode {i_episode} \t Avg reward: {running_reward} \t CCE approx {cce_t} for (state, action) {state, action} with {cce_visit_t} visits')
             ckpt = os.path.join(ckpt_folder, '{}.pth'.format(i_episode))
             torch.save(agent.policy.state_dict(), ckpt)
             #---------------------
@@ -61,7 +62,7 @@ def train(env, input_dims, action_space,
         if i_episode % print_interval == 0:
             running_reward = int((running_reward / print_interval))
             print('Episode {} \t Avg reward: {}'.format(i_episode, running_reward))
-            print('Eq approximations:', eq_log[len(eq_log)-1])
+            print('Eq approximations:', cce_log[len(cce_log)-1])
             running_reward = 0
 
 
@@ -95,10 +96,10 @@ if __name__ == '__main__':
 
     start_actions = [1004, 1004, 1000] # user 2 decoy * 2, ent0 decoy
 
-    print_interval = 50
-    save_interval = 200
-    max_episodes = 1 # 100000
-    max_timesteps = 3 #100
+    print_interval = 1000 #50
+    save_interval = 1000 #200
+    max_episodes = 100000
+    max_timesteps = 100
     # 200 episodes for buffer
     update_timesteps = 20000
     K_epochs = 6
