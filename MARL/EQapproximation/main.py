@@ -9,6 +9,7 @@ def EQasAgent():
     """
         blueAgent (EQ approximator) will be the one interacting with the environment
     """
+    print("start running EQasAgent")
     # Initialization 1: Environment
     env = Environment()
     states = env.states
@@ -24,7 +25,7 @@ def EQasAgent():
     cum_loss = []
     log=[]
 
-    for _ in range(100000000): 
+    for _ in range(10000): 
         state = env.current_state 
         blueActionIndex = blueAgent.get_action(state)
         RedActionIndex = redAgent.get_action()
@@ -65,7 +66,7 @@ def EQasObserver():
     cum_loss = []
     log=[]
 
-    for _ in range(100000): 
+    for _ in range(100): 
         state = env.current_state                                                   # get the current state from teh environment
         actionIndex = blueAgent.choose_action(state)                                # let the Q learning agent choose an action
         next_state, loss = env.step(actionIndex)                                    # get the loss for the chosen action
@@ -78,7 +79,7 @@ def EQasObserver():
         log.append([blueAgentActions[actionIndex],state,loss])
 
 
-    # print("log: action, state, loss",log)
+    print("log: action, state, loss",log)
     plot_graph(cum_loss,name="EQasObserver")
 
 
