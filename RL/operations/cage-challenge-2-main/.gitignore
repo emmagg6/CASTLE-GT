@@ -24,7 +24,7 @@ CybORG/Emulator/Config/emulatorconfig.ini
 docs/_build/
 dist
 
-CybORG/Shared/Config/config.ini
+# CybORG/Shared/Config/config.ini
 
 CybORG/Emulator/AWS/Config/awsconfig.ini
 

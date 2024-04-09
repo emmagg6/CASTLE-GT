@@ -57,3 +57,13 @@ class CCE():
             Return the visit counts
         '''
         return self.visit_count
+    
+
+
+'''
+If a bunch of running information is still printing out, go to :
+cage-challege-2-main/CybORG/CybORG/Simulator/State.py
+and comment out the print statements that are uncommented 
+
+-- updates to this file are not being pushed to the main branch
+'''
