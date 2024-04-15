@@ -14,12 +14,14 @@ import os
 from .ApproxCCE import CCE
 
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir_PPO, model_dir_GT, model_file_PPO="model.pth",  model_file_GT="model.pth"):
-        self.model_dir_ppo = model_dir_PPO
-        self.model_file_ppo = model_file_PPO
+    def __init__(self, model_dir, model_file_PPO="model.pth",  model_file_GT="cce.pth"):
+        self.model_dir = model_dir
 
-        self.model_dir_gt = model_dir_GT
+        self.model_file_ppo = model_file_PPO
         self.model_file_gt = model_file_GT
+
+        self.ppo_action_count = 0
+        self.cce_action_count = 0
 
         self.action_space = [133, 134, 135, 139, 3, 4, 5, 9, 16, 17, 18, 22, 11, 12, 13, 14, 141, 142, 143, 144,
                              132, 2, 15, 24, 25, 26, 27]
@@ -82,12 +84,14 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from either PPO or CCE policy
         '''
-        balance_point = 100  # I'm assuming 100 to be statistically significant over the max 27 actions available
+        balance_point = 1000  # to be statistically significant over the max 27 actions available
         
         cce_action, cce_visits = self.get_action_visits_cce(observation)
         if cce_visits > balance_point:
+            self.cce_action_count += 1
             return cce_action
         else:
+            self.ppo_action_count += 1
             return self.get_action_PPO(observation, action_space)
 
 
@@ -108,6 +112,7 @@ class GenericAgent(PPOAgent):
         self.start_actions = [51, 116, 55]
         self.agent_loaded = False
 
-
+    def get_proportions(self):
+        return self.ppo_action_count, self.cce_action_count
 
 

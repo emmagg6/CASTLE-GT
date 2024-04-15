@@ -38,14 +38,20 @@ class CCE():
         if isinstance(loss, torch.Tensor):
             loss = loss.detach().numpy() if loss.requires_grad else loss.numpy()
             loss = np.sum(loss)
-            print("was a torch tensor", loss)
+            # print("was a torch tensor", loss)
         else:
             loss = np.array(loss)
             loss = np.sum(loss)
-            print("was not a torch tensor", loss)
+            # print("was not a torch tensor", loss)
 
         # estimate loss
         estimated_loss = loss / (self.eq_approx[s][a] + 1e-50) + gamma
+
+        # just an additional check since getting some non-numeric values
+        if isinstance(estimated_loss, torch.Tensor):
+            print("estimated loss was a torch tensor")
+            estimated_loss = estimated_loss.detach().numpy() if estimated_loss.requires_grad else estimated_loss.numpy()
+            estimated_loss = np.sum(estimated_loss)
 
         # update eq and count
         self.eq_approx[s][a] *= np.exp(-eta * estimated_loss)

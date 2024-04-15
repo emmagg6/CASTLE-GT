@@ -57,7 +57,7 @@ def train(env, input_dims, action_space,
             ckpt = os.path.join(ckpt_folder, '{}.pth'.format(i_episode))
             torch.save(agent.policy.state_dict(), ckpt)
             #---------------------
-            cce.eq_save(os.path.join(ckpt_folder, '{}.cce.pth'.format(i_episode)))
+            cce.eq_save(os.path.join(ckpt_folder, '{}cce.pth'.format(i_episode)))
             #---------------------
             print('Checkpoint saved')
 
@@ -98,8 +98,8 @@ if __name__ == '__main__':
 
     start_actions = [1004, 1004, 1000] # user 2 decoy * 2, ent0 decoy
 
-    print_interval = 1000 #50
-    save_interval = 1000 #200
+    print_interval = 10000 #50
+    save_interval = 10000 #200
     max_episodes = 100000
     max_timesteps = 100
     # 200 episodes for buffer
