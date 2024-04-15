@@ -30,6 +30,8 @@ def train(env, input_dims, action_space,
     cce_log = []   # lst of [action, state, eq, loss] lsts
 
     for i_episode in range(1, max_episodes + 1):
+        if i_episode % 10000 == 0 or i_episode == 1:
+            print('Episode:', i_episode)
         state = env.reset()
         for t in range(max_timesteps):
             time_step += 1

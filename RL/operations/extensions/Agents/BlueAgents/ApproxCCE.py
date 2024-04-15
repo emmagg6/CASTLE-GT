@@ -29,14 +29,23 @@ class CCE():
         A = len(action_space)       # number of actions
         a = action                  # an integer representing the action
 
-
         if s not in self.eq_approx:
             # self.eq_approx[s] = np.full(A, 1.0 / A)    # initializes as a uniform dist. 
             self.eq_approx[s] =  np.full(A, 1.0)         # to initialize starting at 1.0 (as Ryan descibed)
             self.visit_count[s] = np.zeros(A)  
 
+
+        if isinstance(loss, torch.Tensor):
+            loss = loss.detach().numpy() if loss.requires_grad else loss.numpy()
+            loss = np.sum(loss)
+            print("was a torch tensor", loss)
+        else:
+            loss = np.array(loss)
+            loss = np.sum(loss)
+            print("was not a torch tensor", loss)
+
         # estimate loss
-        estimated_loss = loss / self.eq_approx[s][a] + gamma
+        estimated_loss = loss / (self.eq_approx[s][a] + 1e-50) + gamma
 
         # update eq and count
         self.eq_approx[s][a] *= np.exp(-eta * estimated_loss)
@@ -57,6 +66,20 @@ class CCE():
             Return the visit counts
         '''
         return self.visit_count
+    
+    def get_action(self, observation):
+        '''
+            Get the action based on the eq approximations
+        '''
+        action = np.argmax(self.eq_approx[observation])
+        return action
+    
+    def load_eq(self, path):
+        '''
+            Load the eq approximations from a file
+        '''
+        self.eq_approx = torch.load(path)
+        return self.eq_approx
     
 
 

@@ -11,8 +11,10 @@ from .BlueSleepAgent import BlueSleepAgent
 import numpy as np
 import os
 
+from .ApproxCCE import CCE
+
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir_PPO, model_file_PPO="model.pth", model_dir_GT, model_file_GT="model.pth"):
+    def __init__(self, model_dir_PPO, model_dir_GT, model_file_PPO="model.pth",  model_file_GT="model.pth"):
         self.model_dir_ppo = model_dir_PPO
         self.model_file_ppo = model_file_PPO
 
@@ -57,19 +59,21 @@ class GenericAgent(PPOAgent):
             action = self.agent.get_action(observation)
         return action
     
-    def get_action_cce():
+    def get_action_visits_cce(self, observation):
         '''
         Get the action from the CCE agent.
 
         Returns:
             action: optimal action from the CCE policy
         '''
-        #TODO
+        cce_eq = self.load_CCE()
+        action = cce_eq.get_action(observation)   # made a get_action method in ApproxCCE.py
+        visits = cce_eq.get_counts()
+        return action, visits  
 
 
 
-
-    def select_action(): 
+    def get_action(self, observation, action_space=None): 
         '''
         Select action from a combination of the PPO and CCE action-selection
         policies -- depending on whether the equilibrium approx has been 
@@ -78,9 +82,13 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from either PPO or CCE policy
         '''
-        # TODO
-
-
+        balance_point = 100  # I'm assuming 100 to be statistically significant over the max 27 actions available
+        
+        cce_action, cce_visits = self.get_action_visits_cce(observation)
+        if cce_visits > balance_point:
+            return cce_action
+        else:
+            return self.get_action_PPO(observation, action_space)
 
 
     def load_sleep(self):
@@ -90,6 +98,10 @@ class GenericAgent(PPOAgent):
         ckpt = os.path.join(os.getcwd(),"Models",self.model_dir,self.model_file)
         return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
                        deterministic=True, training=False)
+
+    def load_CCE(self):
+        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir_gt,self.model_file_gt)
+        return CCE().load_eq(ckpt)
 
     def end_episode(self):
         self.scan_state = np.zeros(10)
