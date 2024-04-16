@@ -64,9 +64,9 @@ class GenericAgent(PPOAgent):
             action = self.agent.get_action(observation)
         return action
     
-    def get_action_visits_cce(self, observation):
+    def get_action_and_visits_cce(self, observation):
         '''
-        Get the action from the CCE agent.
+        Get the optimal (equilibrium) action from the calculated CCE.
 
         Returns:
             action: optimal action from the CCE policy
@@ -75,8 +75,8 @@ class GenericAgent(PPOAgent):
             self.cce = self.load_CCE()
             self.cce_loaded = True
 
-        action_cce_state, visits_cce_state = self.cce[observation]
-        return action_cce_state, visits_cce_state
+        eq_action, eq_visits = self.cce.get_eq_action_visits(observation)
+        return eq_action, eq_visits
 
 
 

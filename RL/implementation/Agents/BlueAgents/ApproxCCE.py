@@ -40,15 +40,10 @@ class CCE():
         loss = np.sum(loss)
 
 
-        # print(f'cce[s]: {self.cce[s]}')
-        # print(f'cce[s][actions]: {self.cce[s][0]}')
-        # print(f'cce[s][visits]: {self.cce[s][1]}')
-
         [current_approx[s], current_count[s]] = self.cce[s]
 
         # estimate loss
         estimated_loss = loss / (current_approx[s][a] + 1e-50) + gamma
-
 
         # Update eq and count
         current_approx[s][a] *= np.exp(-eta * estimated_loss)
@@ -56,7 +51,6 @@ class CCE():
         current_count[s][a] += 1
 
         self.cce[s] = [current_approx[s], current_count[s]]  # Update the tuple in the dictionary
-
 
         return self.cce
 
@@ -70,7 +64,7 @@ class CCE():
             pickle.dump(self.cce, f)
 
     
-    def get_action_visits(self, observation):
+    def get_eq_action_visits(self, observation):
         '''
             Get the action based on the eq approximations
         '''
@@ -89,6 +83,7 @@ class CCE():
         return self.cce
     
     
+
 
 
 
