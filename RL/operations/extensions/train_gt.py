@@ -27,7 +27,7 @@ def train(env, input_dims, action_space,
 
     running_reward, time_step = 0, 0
 
-    cce_log = []   # lst of [action, state, eq, loss] lsts
+    # cce_log = []   # lst of [action, state, eq aprrox for state-action, count action selected for state, loss] lists
 
     for i_episode in range(1, max_episodes + 1):
         if i_episode % 10000 == 0 or i_episode == 1:
@@ -40,8 +40,8 @@ def train(env, input_dims, action_space,
             agent.store(reward, done)
 
             loss = agent.get_loss()
-            cce_t, cce_visit_t = cce.update_eq(state, action, loss)
-            cce_log.append([action, state, cce_t, cce_visit_t, loss])
+            cce_info = cce.update_eq(state, action, loss)
+            # cce_log.append([action, state, cce_t[state][0][action], cce_t[state][1][action], loss])
 
             if time_step % update_timestep == 0:
                 agent.train()
@@ -53,18 +53,18 @@ def train(env, input_dims, action_space,
         agent.end_episode()
 
         if i_episode % save_interval == 0:
-            print(f'Episode {i_episode} \t Avg reward: {running_reward} \t CCE approx {cce_t} for (state, action) {state, action} with {cce_visit_t} visits')
+            [cce_t, cce_visit_t] = cce_info[state]
+            print(f'Episode {i_episode} \t Avg reward: {running_reward} \t CCE approx {cce_t} for state {state} and state visits {cce_visit_t} for each action')
             ckpt = os.path.join(ckpt_folder, '{}.pth'.format(i_episode))
             torch.save(agent.policy.state_dict(), ckpt)
             #---------------------
-            cce.eq_save(os.path.join(ckpt_folder, '{}cce.pth'.format(i_episode)))
+            cce_t.eq_save(os.path.join(ckpt_folder, '{}cce.pth'.format(i_episode)))
             #---------------------
             print('Checkpoint saved')
 
         if i_episode % print_interval == 0:
             running_reward = int((running_reward / print_interval))
             print('Episode {} \t Avg reward: {}'.format(i_episode, running_reward))
-            print('Eq approximations:', cce_log[len(cce_log)-1])
             running_reward = 0
 
 

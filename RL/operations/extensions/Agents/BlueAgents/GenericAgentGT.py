@@ -20,6 +20,9 @@ class GenericAgent(PPOAgent):
         self.model_file_ppo = model_file_PPO
         self.model_file_gt = model_file_GT
 
+        self.cce = {}
+        self.cce_loaded = False
+
         self.ppo_action_count = 0
         self.cce_action_count = 0
 
@@ -68,10 +71,12 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from the CCE policy
         '''
-        cce_eq = self.load_CCE()
-        action = cce_eq.get_action(observation)   # made a get_action method in ApproxCCE.py
-        visits = cce_eq.get_counts()
-        return action, visits  
+        if self.cce_loaded is False:
+            self.cce = self.load_CCE()
+            self.cce_loaded = True
+
+        action_cce_state, visits_cce_state = self.cce[observation]
+        return action_cce_state, visits_cce_state
 
 
 
@@ -84,7 +89,7 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from either PPO or CCE policy
         '''
-        balance_point = 1000  # to be statistically significant over the max 27 actions available
+        balance_point = 10000  # 10% of 100,000 total training episodes
         
         cce_action, cce_visits = self.get_action_visits_cce(observation)
         if cce_visits > balance_point:
@@ -104,7 +109,7 @@ class GenericAgent(PPOAgent):
                        deterministic=True, training=False)
 
     def load_CCE(self):
-        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir_gt,self.model_file_gt)
+        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir,self.model_file_gt)
         return CCE().load_eq(ckpt)
 
     def end_episode(self):

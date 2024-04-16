@@ -21,7 +21,7 @@ agent_name = 'PPOxCCE'
 random.seed(0)
 
 # load blue agent
-blue_agent = 'gt-test'
+blue_agent = 'gt'
 agent = GenericAgent(model_dir=blue_agent)
 
 # changed to ChallengeWrapper2
@@ -37,17 +37,17 @@ if __name__ == "__main__":
     # commit_hash = get_git_revision_hash()
     commit_hash = "Not using git"
     # ask for a name
-    name = "John Hannay"
+    name = "Dartmouth_Northeastern"
     # ask for a team
-    team = "CardiffUni"
+    team = "BlueSTAR"
     # ask for a name for the agent
-    name_of_agent = "PPO + Greedy decoys"
+    name_of_agent = "PPO + Greedy decoys + GT"
 
     lines = inspect.getsource(wrap)
     wrap_line = lines.split('\n')[1].split('return ')[1]
 
 
-    print(f'Using agent {agent.__class__.__name__}, if this is incorrect please update the code to load in your agent')
+    print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
     file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}.txt'
     print(f'Saving evaluation results to {file_name}')
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     # red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
 
     print(f'using CybORG v{cyborg_version}, {scenario}\n')
-    for num_steps in [30]: #, 50, 100]:
+    for num_steps in [30, 50, 100]:
         for red_agent, name in red_agents:
             cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
             wrapped_cyborg = wrap(cyborg)
@@ -119,14 +119,8 @@ if __name__ == "__main__":
             print(f'Average reward for red agent {name} and steps {num_steps} is: {round(mean(total_reward), 2)} with a standard deviation of {round(stdev(total_reward), 2)}')
             with open(file_name, 'a+') as data:
                 data.write(f'steps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(total_reward)}\n')
-                for act, sum_rew in zip(actions, total_reward):
-                    data.write(f'actions: {act}, total reward: {sum_rew}\n')
 
 
-
-            print(f'Average reward for red agent {name} and steps {num_steps} is: {mean(total_reward)} with a standard deviation of {stdev(total_reward)}')
-            with open(file_name, 'a+') as data:
-                data.write(f'steps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(total_reward)}\n')
-                for act, sum_rew in zip(actions, total_reward):
-                    data.write(f'actions: {act}, total reward: {sum_rew}\n')
-
+with open(file_name, 'a+') as data:
+    data.write('\n\n\n')
+    data.write(f'PPO action-selection count: {ppo_action_cnt}, CCE action-selection count: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')

@@ -1,12 +1,11 @@
 import numpy as np
 import torch
+import pickle
 
 
 class CCE():
     def __init__(self):
-        self.eq_approx = {}                     # dict for state to a specific equilibrium approximation
-        self.visit_count = {}                   # dict for state to a visit count np.array
-
+        self.cce = {}                     # dict for state to a specific equilibrium approximation and visit count for each action
 
     def update_eq(self, state, action, loss, 
                   action_space=[i for i in range(158)], eta=0.1, gamma=0.01): 
@@ -22,71 +21,75 @@ class CCE():
 
             Updates:
                 New state: initializes the state in EQ approximation and visit count dicts
-                self.eq_approx: the policy for the respective state and action
-                self.as_count: the visit count for the respective state and action
+                self.cce: the policy and count for the respective state and action
         '''
         s = tuple(state)            # to enable mutability of dict keys
         A = len(action_space)       # number of actions
         a = action                  # an integer representing the action
 
-        if s not in self.eq_approx:
-            # self.eq_approx[s] = np.full(A, 1.0 / A)    # initializes as a uniform dist. 
-            self.eq_approx[s] =  np.full(A, 1.0)         # to initialize starting at 1.0 (as Ryan descibed)
-            self.visit_count[s] = np.zeros(A)  
+        current_approx = {}   # current equilibrium approximation
+        current_count = {}    # current visit count
 
+        if s not in self.cce:
+            self.cce[s] = [np.full(A, 1.0 / A)]    # initializes as a uniform dist. 
+            self.cce[s].append(np.zeros(A))        # initializes as a zero count
 
+        # loss passed in as tensor with grad after initial iteration typically
         if isinstance(loss, torch.Tensor):
             loss = loss.detach().numpy() if loss.requires_grad else loss.numpy()
-            loss = np.sum(loss)
-            # print("was a torch tensor", loss)
-        else:
-            loss = np.array(loss)
-            loss = np.sum(loss)
-            # print("was not a torch tensor", loss)
+        loss = np.sum(loss)
+
+
+        # print(f'cce[s]: {self.cce[s]}')
+        # print(f'cce[s][actions]: {self.cce[s][0]}')
+        # print(f'cce[s][visits]: {self.cce[s][1]}')
+
+        [current_approx[s], current_count[s]] = self.cce[s]
 
         # estimate loss
-        estimated_loss = loss / (self.eq_approx[s][a] + 1e-50) + gamma
-
-        # just an additional check since getting some non-numeric values
-        if isinstance(estimated_loss, torch.Tensor):
-            print("estimated loss was a torch tensor")
-            estimated_loss = estimated_loss.detach().numpy() if estimated_loss.requires_grad else estimated_loss.numpy()
-            estimated_loss = np.sum(estimated_loss)
-
-        # update eq and count
-        self.eq_approx[s][a] *= np.exp(-eta * estimated_loss)
-        self.eq_approx[s] /= np.sum(self.eq_approx[s])
-        self.visit_count[s][a] += 1
-
-        return self.eq_approx[s][a], self.visit_count[s][a] # for eval or to track
+        estimated_loss = loss / (current_approx[s][a] + 1e-50) + gamma
 
 
-    def eq_save(self, path):
+        # Update eq and count
+        current_approx[s][a] *= np.exp(-eta * estimated_loss)
+        current_approx[s] /= np.sum(current_approx[s])
+        current_count[s][a] += 1
+
+        self.cce[s] = [current_approx[s], current_count[s]]  # Update the tuple in the dictionary
+
+
+        return self.cce
+
+
+    def save(self, path):
         '''
-            Save the eq approximations to a file
+            Save the eq approximations to a file with pickle
         '''
-        torch.save(self.eq_approx, path)
+        # saving cce with pickle since torch.load is not working for such a large file
+        with open(path, 'wb') as f:
+            pickle.dump(self.cce, f)
 
-    def get_counts(self):
-        '''
-            Return the visit counts
-        '''
-        return self.visit_count
     
-    def get_action(self, observation):
+    def get_action_visits(self, observation):
         '''
             Get the action based on the eq approximations
         '''
-        action = np.argmax(self.eq_approx[observation])
-        return action
+        current_approx, current_count = self.cce[observation]
+        action = np.argmax(current_approx)
+        return action, current_count[observation][action]
     
     def load_eq(self, path):
         '''
             Load the eq approximations from a file
         '''
-        self.eq_approx = torch.load(path)
-        return self.eq_approx
+        # self.eq_approx = torch.load(path)
+        # return self.eq_approx
+        # dict too large for torch.load -- use numpy instead
+        self.cce = np.load(path, allow_pickle=True)
+        return self.cce
     
+    
+
 
 
 '''
