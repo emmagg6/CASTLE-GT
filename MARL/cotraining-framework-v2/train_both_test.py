@@ -30,8 +30,8 @@ if __name__ == '__main__':
 
     # change checkpoint directory
     # ckpt_folder = '/net/data/idsgnn/cotrain_both/'
-    # ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
-    ckpt_folder = '/scratch/egraham/CASTLE/cage-challenge-2/cotraining-framework-v2/Models/full_cotrain_both'
+    folder = "cotrain_both"
+    ckpt_folder = ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
 
