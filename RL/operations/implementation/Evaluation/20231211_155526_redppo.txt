@@ -1,3 +1,0 @@
-CybORG v2.1, Scenario2, Commit Hash: Not using git
-author: , team: , technique: PPO
-wrappers: ChallengeWrapper2(env=env, agent_name='Red')
