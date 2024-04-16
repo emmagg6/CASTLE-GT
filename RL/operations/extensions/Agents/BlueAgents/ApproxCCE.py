@@ -29,14 +29,29 @@ class CCE():
         A = len(action_space)       # number of actions
         a = action                  # an integer representing the action
 
-
         if s not in self.eq_approx:
             # self.eq_approx[s] = np.full(A, 1.0 / A)    # initializes as a uniform dist. 
             self.eq_approx[s] =  np.full(A, 1.0)         # to initialize starting at 1.0 (as Ryan descibed)
             self.visit_count[s] = np.zeros(A)  
 
+
+        if isinstance(loss, torch.Tensor):
+            loss = loss.detach().numpy() if loss.requires_grad else loss.numpy()
+            loss = np.sum(loss)
+            # print("was a torch tensor", loss)
+        else:
+            loss = np.array(loss)
+            loss = np.sum(loss)
+            # print("was not a torch tensor", loss)
+
         # estimate loss
-        estimated_loss = loss / self.eq_approx[s][a] + gamma
+        estimated_loss = loss / (self.eq_approx[s][a] + 1e-50) + gamma
+
+        # just an additional check since getting some non-numeric values
+        if isinstance(estimated_loss, torch.Tensor):
+            print("estimated loss was a torch tensor")
+            estimated_loss = estimated_loss.detach().numpy() if estimated_loss.requires_grad else estimated_loss.numpy()
+            estimated_loss = np.sum(estimated_loss)
 
         # update eq and count
         self.eq_approx[s][a] *= np.exp(-eta * estimated_loss)
@@ -57,3 +72,27 @@ class CCE():
             Return the visit counts
         '''
         return self.visit_count
+    
+    def get_action(self, observation):
+        '''
+            Get the action based on the eq approximations
+        '''
+        action = np.argmax(self.eq_approx[observation])
+        return action
+    
+    def load_eq(self, path):
+        '''
+            Load the eq approximations from a file
+        '''
+        self.eq_approx = torch.load(path)
+        return self.eq_approx
+    
+
+
+'''
+If a bunch of running information is still printing out, go to :
+cage-challege-2-main/CybORG/CybORG/Simulator/State.py
+and comment out the print statements that are uncommented 
+
+-- updates to this file are not being pushed to the main branch
+'''

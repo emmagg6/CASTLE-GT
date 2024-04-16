@@ -1,3 +1,9 @@
+'''
+TO BE COMPLETE FIXED THIS IS JUST MARKED UP FOR AN OUTLINE
+
+'''
+
+
 import copy
 
 from .PPOAgent import PPOAgent
@@ -5,10 +11,18 @@ from .BlueSleepAgent import BlueSleepAgent
 import numpy as np
 import os
 
+from .ApproxCCE import CCE
+
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir_PPO, model_file_PPO="model.pth", model_dir_GT, model_file_GT="model.pth"):
+    def __init__(self, model_dir, model_file_PPO="model.pth",  model_file_GT="cce.pth"):
         self.model_dir = model_dir
-        self.model_file = model_file
+
+        self.model_file_ppo = model_file_PPO
+        self.model_file_gt = model_file_GT
+
+        self.ppo_action_count = 0
+        self.cce_action_count = 0
+
         self.action_space = [133, 134, 135, 139, 3, 4, 5, 9, 16, 17, 18, 22, 11, 12, 13, 14, 141, 142, 143, 144,
                              132, 2, 15, 24, 25, 26, 27]
         self.end_episode()
@@ -47,11 +61,39 @@ class GenericAgent(PPOAgent):
             action = self.agent.get_action(observation)
         return action
     
-    def get_action_cce():
-        #TODO
+    def get_action_visits_cce(self, observation):
+        '''
+        Get the action from the CCE agent.
 
-    def select_action(): 
-        # TODO
+        Returns:
+            action: optimal action from the CCE policy
+        '''
+        cce_eq = self.load_CCE()
+        action = cce_eq.get_action(observation)   # made a get_action method in ApproxCCE.py
+        visits = cce_eq.get_counts()
+        return action, visits  
+
+
+
+    def get_action(self, observation, action_space=None): 
+        '''
+        Select action from a combination of the PPO and CCE action-selection
+        policies -- depending on whether the equilibrium approx has been 
+        statistically estabilished as valid. 
+
+        Returns:
+            action: optimal action from either PPO or CCE policy
+        '''
+        balance_point = 1000  # to be statistically significant over the max 27 actions available
+        
+        cce_action, cce_visits = self.get_action_visits_cce(observation)
+        if cce_visits > balance_point:
+            self.cce_action_count += 1
+            return cce_action
+        else:
+            self.ppo_action_count += 1
+            return self.get_action_PPO(observation, action_space)
+
 
     def load_sleep(self):
         return BlueSleepAgent()
@@ -61,11 +103,16 @@ class GenericAgent(PPOAgent):
         return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
                        deterministic=True, training=False)
 
+    def load_CCE(self):
+        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir_gt,self.model_file_gt)
+        return CCE().load_eq(ckpt)
+
     def end_episode(self):
         self.scan_state = np.zeros(10)
         self.start_actions = [51, 116, 55]
         self.agent_loaded = False
 
-
+    def get_proportions(self):
+        return self.ppo_action_count, self.cce_action_count
 
 
