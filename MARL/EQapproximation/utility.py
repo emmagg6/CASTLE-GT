@@ -19,3 +19,22 @@ def plot_graph(cumulative_losses,name):
     plt.grid(True)
 
     plt.show()
+
+def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgentActions):
+    """
+    Plot the scaled sum of policy over time for each state.
+
+    Args:
+    policy_sums_over_time (dict): A dictionary where each key is a state and each value is a list of scaled policy sums over time.
+    checkpoints (list): List of iteration numbers at which policy sums were recorded.
+    """
+    plt.figure(figsize=(12, 8))
+    for state, sums in policy_sums_over_time.items():
+        plt.plot(checkpoints, sums, label=f'State {state}+')
+    
+    plt.title('Scaled Sum of Policy Over Time for Each State')
+    plt.xlabel('Iteration')
+    plt.ylabel('Scaled Sum of Policy')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
