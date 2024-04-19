@@ -46,10 +46,11 @@ class EqApproximation:
         """
             used when the agent is not the one interacting with the environment
         """
+        
         self.visit_count[state][action] += 1
         
         currentPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                                    # normalize the policy to a probability distribution
-        self.sumOfPolicy[state] += currentPolicy
+        self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
 
         action_prob = currentPolicy[action]
 

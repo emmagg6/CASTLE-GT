@@ -1,11 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import itertools
 
-def plot_graph(cumulative_losses,name):
+def plot_graph(losses,name):
     """
         plot the cumulative loss over time steps
     """
-    time_steps = np.arange(1, len(cumulative_losses) + 1)
+    time_steps = np.arange(1, len(losses) + 1)
+    cumulative_losses = np.cumsum(losses)
 
     # Plotting
     plt.figure(figsize=(10, 6))
@@ -29,8 +31,19 @@ def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgen
     checkpoints (list): List of iteration numbers at which policy sums were recorded.
     """
     plt.figure(figsize=(12, 8))
-    for state, sums in policy_sums_over_time.items():
-        plt.plot(checkpoints, sums, label=f'State {state}+')
+    colors = plt.cm.tab10.colors  # Get a colormap from matplotlib (10 colors)
+    line_styles = ['-', '--', ':', '-.']  # Define line styles
+    state_colors = dict(zip(policy_sums_over_time.keys(), itertools.cycle(colors)))
+    
+    for state, sums_list in policy_sums_over_time.items():
+        # Unpack each action's sum values from each array and plot them
+        color = state_colors[state]  # Get consistent color for the state
+        for action_index in range(len(sums_list[0])):  # Assuming all arrays have the same size
+            # Extract the sum for this action across all checkpoints
+            action_sums = [sums[action_index] for sums in sums_list]
+            line_style = line_styles[action_index % len(line_styles)]  # Cycle through line styles
+            plt.plot(checkpoints, action_sums, label=f'State {state} Action {blueAgentActions[action_index]}', 
+                     color=color, linestyle=line_style)
     
     plt.title('Scaled Sum of Policy Over Time for Each State')
     plt.xlabel('Iteration')
@@ -38,3 +51,24 @@ def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgen
     plt.legend()
     plt.grid(True)
     plt.show()
+
+
+
+def find_most_favored_action(sumOfPolicy):
+    max_value = -float('inf')  
+    favored_state = None
+    favored_action = None
+
+    # Iterate through each state's policy sums
+    for state, policy_sums in sumOfPolicy.items():
+        # Find the action with the highest cumulative policy sum in this state
+        max_action_index = np.argmax(policy_sums)  # Assuming policy_sums is a numpy array
+        max_action_value = policy_sums[max_action_index]
+        
+        # Check if this action's max is the highest found so far across all states
+        if max_action_value > max_value:
+            max_value = max_action_value
+            favored_state = state
+            favored_action = max_action_index
+
+    return favored_state, favored_action, max_value
