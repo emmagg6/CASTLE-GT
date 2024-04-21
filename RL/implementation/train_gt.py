@@ -30,7 +30,7 @@ def train(env, input_dims, action_space,
     # cce_log = []   # lst of [action, state, eq aprrox for state-action, count action selected for state, loss] lists
 
     for i_episode in range(1, max_episodes + 1):
-        if i_episode % 10000 == 0 or i_episode == 1:
+        if i_episode % 10000 == 0 or i_episode < 10:
             print('Episode:', i_episode)
         state = env.reset()
         for t in range(max_timesteps):
@@ -53,12 +53,13 @@ def train(env, input_dims, action_space,
         agent.end_episode()
 
         if i_episode % save_interval == 0:
-            [cce_t, cce_visit_t] = cce_info[state]
+            cce_t = cce_info[tuple(state)][0]
+            cce_visit_t = cce_info[tuple(state)][1]
             print(f'Episode {i_episode} \t Avg reward: {running_reward} \t CCE approx {cce_t} for state {state} and state visits {cce_visit_t} for each action')
             ckpt = os.path.join(ckpt_folder, '{}.pth'.format(i_episode))
             torch.save(agent.policy.state_dict(), ckpt)
             #---------------------
-            cce_t.eq_save(os.path.join(ckpt_folder, '{}cce.pth'.format(i_episode)))
+            cce.save(os.path.join(ckpt_folder, '{}cce.pkl'.format(i_episode)))
             #---------------------
             print('Checkpoint saved')
 
@@ -76,7 +77,7 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'gt-test'
+    folder = 'gt'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
@@ -87,16 +88,16 @@ if __name__ == '__main__':
     env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
     input_dims = env.observation_space.shape[0]
 
-    action_space = [133, 134, 135, 139]  # restore enterprise and opserver
-    action_space += [3, 4, 5, 9]  # analyse enterprise and opserver
-    action_space += [16, 17, 18, 22]  # remove enterprise and opserer
-    action_space += [11, 12, 13, 14]  # analyse user hosts
-    action_space += [141, 142, 143, 144]  # restore user hosts
-    action_space += [132]  # restore defender
-    action_space += [2]  # analyse defender
-    action_space += [15, 24, 25, 26, 27]  # remove defender and user hosts
+    action_space = [133, 134, 135, 139]     # restore enterprise and opserver
+    action_space += [3, 4, 5, 9]            # analyse enterprise and opserver
+    action_space += [16, 17, 18, 22]        # remove enterprise and opserer
+    action_space += [11, 12, 13, 14]        # analyse user hosts
+    action_space += [141, 142, 143, 144]    # restore user hosts
+    action_space += [132]                   # restore defender
+    action_space += [2]                     # analyse defender
+    action_space += [15, 24, 25, 26, 27]    # remove defender and user hosts
 
-    start_actions = [1004, 1004, 1000] # user 2 decoy * 2, ent0 decoy
+    start_actions = [1004, 1004, 1000]      # user 2 decoy * 2, ent0 decoy
 
     print_interval = 10000 #50
     save_interval = 10000 #200

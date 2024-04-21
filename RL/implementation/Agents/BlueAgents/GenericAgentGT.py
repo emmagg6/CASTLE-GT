@@ -14,7 +14,7 @@ import os
 from .ApproxCCE import CCE
 
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir, model_file_PPO="model.pth",  model_file_GT="cce.pth"):
+    def __init__(self, model_dir, model_file_PPO="100000.pth",  model_file_GT="100000cce.pkl"):
         self.model_dir = model_dir
 
         self.model_file_ppo = model_file_PPO
@@ -70,12 +70,13 @@ class GenericAgent(PPOAgent):
 
         Returns:
             action: optimal action from the CCE policy
+            visits: number of visits to the state-action pair in the CCE computation
         '''
-        if self.cce_loaded is False:
-            self.cce = self.load_CCE()
+        if not self.cce_loaded:
+            self.load_CCE()
             self.cce_loaded = True
-
-        eq_action, eq_visits = self.cce.get_eq_action_visits(observation)
+        # print("Observation: ", tuple(observation))
+        eq_action, eq_visits = self.cce.get_eq_action_visits(tuple(observation))
         return eq_action, eq_visits
 
 
@@ -91,7 +92,7 @@ class GenericAgent(PPOAgent):
         '''
         balance_point = 10000  # 10% of 100,000 total training episodes
         
-        cce_action, cce_visits = self.get_action_visits_cce(observation)
+        cce_action, cce_visits = self.get_action_and_visits_cce(observation)
         if cce_visits > balance_point:
             self.cce_action_count += 1
             return cce_action
@@ -104,13 +105,22 @@ class GenericAgent(PPOAgent):
         return BlueSleepAgent()
 
     def load_generic(self):
-        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir,self.model_file)
+        ckpt = os.path.join(os.getcwd(),"Models", self.model_dir, self.model_file_ppo)
         return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
                        deterministic=True, training=False)
 
+    # def load_CCE(self):
+    #     cce_trained= CCE()
+    #     ckpt = os.path.join(os.getcwd(),"Models",self.model_dir,self.model_file_gt)
+    #     cce = cce_trained.load_eq(ckpt)
+    #     self.cce = cce
+
+  # Ensure self.cce is an instance of CCE
     def load_CCE(self):
-        ckpt = os.path.join(os.getcwd(),"Models",self.model_dir,self.model_file_gt)
-        return CCE().load_eq(ckpt)
+        self.cce = CCE()
+        ckpt = os.path.join(os.getcwd(), "Models", self.model_dir, self.model_file_gt)
+        self.cce.load_eq(ckpt)
+
 
     def end_episode(self):
         self.scan_state = np.zeros(10)
