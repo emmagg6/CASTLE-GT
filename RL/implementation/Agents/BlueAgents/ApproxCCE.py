@@ -2,10 +2,17 @@ import numpy as np
 import torch
 import pickle
 
-
 class CCE():
     def __init__(self):
-        self.cce = {}                     # dict for state to a specific equilibrium approximation and visit count for each action
+        '''
+            EQ Approximation class that implements the EXP3-IX algorithm
+
+            Initializes:
+                self.cce: dictionary tracks a str-state to a specific:
+                  equilibrium approximation and visit count for each action
+            '''
+        self.cce = {}
+        self.runningPolicy = {}
 
     def update_eq(self, state, action, loss, 
                   action_space=[i for i in range(158)], eta=0.1, gamma=0.01): 
@@ -33,17 +40,21 @@ class CCE():
         if s not in self.cce:
             self.cce[s] = [np.full(A, 1.0 / A)]    # initializes as a uniform dist. 
             self.cce[s].append(np.zeros(A))        # initializes as a zero count
+            self.runningPolicy[s] = np.zeros(A)    # initializes as a zero count
 
         # loss passed in as tensor with grad after initial iteration typically
         if isinstance(loss, torch.Tensor):
             loss = loss.detach().numpy() if loss.requires_grad else loss.numpy()
         loss = np.sum(loss)
 
-
+        # policy & action probabilities
         [current_approx[s], current_count[s]] = self.cce[s]
+        policy_t = current_approx[s] / np.sum(current_approx[s])
+        self.runningPolicy[s] += policy_t
+        action_prob = policy_t[a]
 
         # estimate loss
-        estimated_loss = loss / (current_approx[s][a] + 1e-50) + gamma
+        estimated_loss = loss / (action_prob + 1e-50) + gamma
 
         # Update eq and count
         current_approx[s][a] *= np.exp(-eta * estimated_loss)
@@ -70,7 +81,7 @@ class CCE():
         '''
         current_approx, current_count = self.cce[observation]
         action = np.argmax(current_approx)
-        return action, current_count[observation][action]
+        return action, current_count[action]
     
     def load_eq(self, path):
         '''
@@ -79,8 +90,9 @@ class CCE():
         # self.eq_approx = torch.load(path)
         # return self.eq_approx
         # dict too large for torch.load -- use numpy instead
-        self.cce = np.load(path, allow_pickle=True)
-        return self.cce
+        with open(path, 'rb') as f:
+            self.cce = pickle.load(f)
+        # return self.cce
     
     
 

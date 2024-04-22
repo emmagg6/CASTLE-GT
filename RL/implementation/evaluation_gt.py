@@ -16,7 +16,7 @@ from Agents.BlueAgents.GenericAgentGT import GenericAgent
 #from Agents.BlueAgents.GenericLongAgent import GenericLongAgent
 import random
 
-MAX_EPS = 1 #1000
+MAX_EPS = 1000
 agent_name = 'PPOxCCE'
 random.seed(0)
 
@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-    file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}.txt'
+    file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}_10th_full.txt'
     print(f'Saving evaluation results to {file_name}')
     with open(file_name, 'a+') as data:
         data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
@@ -73,6 +73,7 @@ if __name__ == "__main__":
 
     print(f'using CybORG v{cyborg_version}, {scenario}\n')
     for num_steps in [30, 50, 100]:
+
         for red_agent, name in red_agents:
             cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
             wrapped_cyborg = wrap(cyborg)
@@ -91,16 +92,16 @@ if __name__ == "__main__":
                 for j in range(num_steps):
                     while True:
                         try:
-                            action = agent.get_action(observation, action_space)
-                            observation, rew, done, info = wrapped_cyborg.step(action)
-                            print(f"Blue Agent Action: {cyborg.get_last_action('Blue')}")
-                            print(f"Red Agent Action: {cyborg.get_last_action('Red')}")
+                            action_t = agent.get_action(observation, action_space)
+                            observation_t, reward_t, done, info = wrapped_cyborg.step(action_t)
+                            # print(f"Blue Agent Action: {cyborg.get_last_action('Blue')}")
+                            # print(f"Red Agent Action: {cyborg.get_last_action('Red')}")
                         except KeyError as e:
-                            print(f'Bad action on Episode {i}, step {j}, Action: {action}, Error: {e}. Re-rolling.')
+                            print(f'Bad action on Episode {i}, step {j}, Action: {action_t}, Error: {e}. Re-rolling.')
                         else:
                             break
                     # result = cyborg.step(agent_name, action)
-                    r.append(rew)
+                    r.append(reward_t)
                     # r.append(result.reward)
                     a.append((str(cyborg.get_last_action('Blue')), str(cyborg.get_last_action('Red'))))
 
@@ -118,7 +119,7 @@ if __name__ == "__main__":
             
             print(f'Average reward for red agent {name} and steps {num_steps} is: {round(mean(total_reward), 2)} with a standard deviation of {round(stdev(total_reward), 2)}')
             with open(file_name, 'a+') as data:
-                data.write(f'steps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(total_reward)}\n')
+                data.write(f'steps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(r)}\n')
 
 
 with open(file_name, 'a+') as data:
