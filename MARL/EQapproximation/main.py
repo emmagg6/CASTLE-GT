@@ -7,27 +7,27 @@ from utility import plot_graph
 from utility import plot_scaled_sum_policy_over_time
 from utility import find_most_favored_action
 
-def EQasAgent():
+
+def EQasAgent(total_iteration=10000):
     """
         blueAgent (EQ approximator) will be the one interacting with the environment
     """
-    print("start running EQasAgent")
     # Initialization 1: Environment
     env = Environment()
     states = env.states
 
-    # Initialization 2: EQ Approximation                                                                 # Exploration parameter, γ
-    blueAgentActions = ["Analyse","Remove"]                                      # for simplicity, the blue agent can only choose between two actions
-    redAgentAction = ["noOp","attack"]
-    blueAgent = EqApproximation(states, num_actions=2, eta=0.1, gamma=0.01)     # gamma and eta set to 0.01 and 0.1 for simplicity
+    # Initialization 2: EQ Approximation                                                    # Exploration parameter, γ
+    blueAgentActions = ["Remove","Restore","Sleep"]                                         # for simplicity, the blue agent can only choose between two actions
+    redAgentAction = ["noOp","Attack"]
+    blueAgent =EqApproximation(states, num_actions=3, eta=0.1, gamma=0.7)                   # gamma and eta set to 0.01 and 0.1 for simplicity
 
-    redAgent = RedAgent(5)                                                      # for simplicity: red agent will attack once for 5 time step 
+    redAgent = RedAgent(5)                                                                  # for simplicity: red agent will attack once for 5 time step 
     
     # for plotting and loggin purposes
-    cum_loss = []
+    losses = []
     log=[]
 
-    for _ in range(100000): 
+    for _ in range(total_iteration): 
         state = env.current_state 
         blueActionIndex = blueAgent.get_action(state)
         RedActionIndex = redAgent.get_action()
@@ -38,7 +38,7 @@ def EQasAgent():
         nextstate,loss = env.step(blueAction,RedAction) 
         blueAgent.update_policy(state, blueActionIndex,loss)
 
-        cum_loss.append(loss)
+        losses.append(loss)
         log.append([blueAgentActions[blueActionIndex],state,loss])
 
     # Output the policy and visit counts
@@ -46,8 +46,8 @@ def EQasAgent():
     print(f"Visit counts for state '{state}':", blueAgent.visit_count[state])
 
     # print("log",log)
-    plot_graph(cum_loss,name="EQasAgent")
-
+    # plot_graph(losses,name="EQasAgent")
+    return losses
 def EQasObserver(total_iteration=10000):
     """
         blueAgent (Q learning agent) will be the one interacting with the environment
@@ -61,7 +61,7 @@ def EQasObserver(total_iteration=10000):
 
     # Initialization 2: EQ Approximation
     num_states = len(env.states)                                                                                         
-    blueAgentActions = ["Remove","Restore","Sleep"]                                                      # actions for the blue agent in the cage 4
+    blueAgentActions = ["Remove","Restore","Sleep"]                                                                     # actions for the blue agent in the cage 4
     EQobserver = EqApproximation(states, num_actions=3, eta=0.1, gamma=0.7)                                             # gamma: exploration; eta: learning rate
     blueAgent = QLearningAgent(num_states, num_actions=3, alpha=0.1, gamma=0.8, epsilon=0.7)                            # gamma: discounting; alpha: learning rate; epsilon: exploration
 
@@ -69,15 +69,16 @@ def EQasObserver(total_iteration=10000):
     redAgentAction = ["NoOp","Attack"]
     redAgent = RedAgent(5)      
 
+    # for plotting and logging purposes
     losses = []
     log=[]
     policy_sums_over_time = {state: [] for state in EQobserver.sumOfPolicy.keys()}  # Prepare dictionary to store the data over time
     checkpoints = []
     checkpoint_frequency = total_iteration * 0.05
-
     action_count = {"Remove":0,"Restore":0,"Sleep":0}
+
     for iteration in range(total_iteration): 
-        state = env.current_state                                                   # get the current state from teh environment
+        state = env.current_state                                                       # get the current state from teh environment
         BlueActionIndex = blueAgent.choose_action(state)                                # let the Q learning agent choose an action
         BlueAction = blueAgentActions[BlueActionIndex]
 
@@ -85,16 +86,16 @@ def EQasObserver(total_iteration=10000):
         RedAction = redAgentAction[RedActionIndex]
 
         next_state, loss = env.step(BlueAction,RedAction)                                    # get the loss for the chosen action
-        blueAgent.update_q_table(state, BlueActionIndex,loss,next_state)                # update the policy for the Q learning agent
+        blueAgent.update_q_table(state, BlueActionIndex,loss,next_state)                     # update the policy for the Q learning agent
 
-        action_count[blueAgentActions[BlueActionIndex]] += 1
-        # update for EQ Appriximation as observer
         EQobserver.observe_and_update(state, BlueActionIndex, loss)
-        # print(blueAgentActions[BlueActionIndex],redAgentAction[RedActionIndex],state,loss)
+
+        # ------------------- Logging -------------------
         losses.append(loss)
         log.append([blueAgentActions[BlueActionIndex],state,loss])
+        action_count[blueAgentActions[BlueActionIndex]] += 1
 
-        # Print the sum of policy snapshot every 100 iterations
+        # Print the sum of policy snapshot every fixed iterations
         if (iteration + 1) % int(checkpoint_frequency) == 0:
             # print(f"Iteration {iteration + 1}: Sum of Policy Snapshot:")
             checkpoints.append(iteration + 1)  # Record the checkpoint iteration
@@ -104,17 +105,18 @@ def EQasObserver(total_iteration=10000):
 
         
     # print("log: action, state, loss",log)
-    best_state,best_action,max_value =find_most_favored_action(EQobserver.sumOfPolicy)
-    print(EQobserver.sumOfPolicy)
-    print(f"state {best_state} and action {blueAgentActions[best_action]} has the highset sum of policy value with {max_value}")
-    print("action count" ,action_count)
-
-    print(losses)
-    plot_graph(losses,name="EQasObserver")
+    # best_state,best_action,max_value =find_most_favored_action(EQobserver.sumOfPolicy)
+    # print(EQobserver.sumOfPolicy)
+    # print(f"state {best_state} and action {blueAgentActions[best_action]} has the highset sum of policy value with {max_value}")
+    # print("action count" ,action_count)
+    # plot_graph(losses,name="EQasObserver")
     plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgentActions)               # plot the scaled sum of policy over time for each state
-  
-
-
+    return losses
     
-# EQasAgent()
-EQasObserver(total_iteration=100000000000000)
+lossEQAgent = EQasAgent(total_iteration=100000)
+lossEQobserver = EQasObserver(total_iteration=100000)
+
+
+losses_list = [lossEQAgent, lossEQobserver]
+names_list = ["EQ Agent", "EQ Observer"]
+plot_graph(losses_list, names_list)

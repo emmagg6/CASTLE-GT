@@ -25,7 +25,8 @@ class EqApproximation:
         """
             get an action base on the policy and current state    
         """
-        action = np.random.choice(self.num_actions, p=self.eq_approx[state])                    # choose an action using the policy 
+        currentPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                     # normalize the policy to a probability distribution
+        action = np.random.choice(self.num_actions, p=currentPolicy)                    # choose an action using the policy 
         self.visit_count[state][action] += 1                                                    # increment the visit count for the chosen action
         return action
 
@@ -38,7 +39,7 @@ class EqApproximation:
         self.sumOfPolicy[state] += curerntPolicy
         action = curerntPolicy[chosen_action]
 
-        estimated_loss = loss / action + self.gamma                                                             # estimated loss for the chosen action
+        estimated_loss = loss / (action + self.gamma)                                                             # estimated loss for the chosen action
         self.eq_approx[state][chosen_action] *= np.exp(-self.eta * estimated_loss)                              # update the policy for the chosen action
 
 
@@ -54,7 +55,7 @@ class EqApproximation:
 
         action_prob = currentPolicy[action]
 
-        estimated_loss = loss / (action_prob+ 1e-50) + self.gamma
+        estimated_loss = loss / ((action_prob+ 1e-50) + self.gamma)
 
         self.eq_approx[state][action] *= np.exp(-self.eta * estimated_loss)
   

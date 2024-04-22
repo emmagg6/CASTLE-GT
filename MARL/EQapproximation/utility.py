@@ -2,25 +2,26 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 
-def plot_graph(losses,name):
+def plot_graph(losses_list, names_list):
     """
-        plot the cumulative loss over time steps
+    Plot the cumulative loss over time steps for multiple datasets.
     """
-    time_steps = np.arange(1, len(losses) + 1)
-    cumulative_losses = np.cumsum(losses)
-
-    # Plotting
     plt.figure(figsize=(10, 6))
-    plt.plot(time_steps, cumulative_losses, label='Cumulative Loss')
-    # plt.plot(time_steps, np.sqrt(time_steps), label='√n', linestyle='--')  # Reference sublinear function
+
+
+    for losses, name in zip(losses_list, names_list):
+        time_steps = np.arange(1, len(losses) + 1)
+        cumulative_losses = np.cumsum(losses)
+        plt.plot(time_steps, cumulative_losses, label=name)
 
     plt.xlabel('Time Steps')
     plt.ylabel('Cumulative Loss')
-    plt.title(name)
+    plt.title('Cumulative Loss Over Time Steps')
     plt.legend()
     plt.grid(True)
 
     plt.show()
+
 
 def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgentActions):
     """
@@ -49,8 +50,7 @@ def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgen
     plt.xlabel('Iteration')
     plt.ylabel('Scaled Sum of Policy')
     plt.legend()
-    plt.grid(True)
-    plt.show()
+    plt.show()   
 
 
 
