@@ -49,7 +49,7 @@ if __name__ == "__main__":
 
     print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-    file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}.txt'
+    file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}_10th_full.txt'
     print(f'Saving evaluation results to {file_name}')
     with open(file_name, 'a+') as data:
         data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')

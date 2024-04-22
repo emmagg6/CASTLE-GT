@@ -14,7 +14,7 @@ import os
 from .ApproxCCE import CCE
 
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir, model_file_PPO="100000.pth",  model_file_GT="100000cce.pkl"):
+    def __init__(self, model_dir, model_file_PPO="10000.pth",  model_file_GT="100000cce.pkl"):
         self.model_dir = model_dir
 
         self.model_file_ppo = model_file_PPO
@@ -90,7 +90,7 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from either PPO or CCE policy
         '''
-        balance_point = 10000  # 10% of 100,000 total training episodes
+        balance_point = 1000 
         
         cce_action, cce_visits = self.get_action_and_visits_cce(observation)
         if cce_visits > balance_point:

@@ -1,0 +1,7 @@
+steps: 30, adversary: B_lineAgent, mean: -53.8897, standard deviation 4.0944537760411865
+steps: 50, adversary: B_lineAgent, mean: -156.423, standard deviation 3.5731567247451985
+steps: 100, adversary: B_lineAgent, mean: -602.2682, standard deviation 4.516667673040255
+
+
+
+PPO action-selection count: 180000, CCE action-selection count: 0, CCE precent: 0.0
