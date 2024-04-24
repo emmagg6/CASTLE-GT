@@ -22,7 +22,7 @@ random.seed(0)
 
 
 blue_agent = 'gt-specific'
-balance_points = list(range(1000, 5100, 100))
+balance_points = list(range(51000, 101000, 1000))
 
 # load blue agent
 for balance_point in balance_points:
@@ -55,7 +55,7 @@ for balance_point in balance_points:
 
         print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'{agent_name}_balance{balance_point}.txt'
+        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'full{agent_name}_balance{balance_point}.txt'
         print(f'Saving evaluation results to {file_name}')
         with open(file_name, 'a+') as data:
             data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
@@ -143,5 +143,5 @@ for balance_point in balance_points:
 
     with open(file_name, 'a+') as data:
         data.write('\n\n\n')
-        data.write(f'Note: Balance point: {balance_point}, PPO: 10000.pth, CCE: 10000cce.pkl \n')
+        data.write(f'Note: Balance point: {balance_point}, PPO: 100000.pth, CCE: 100000cce.pkl \n')
     #     # data.write(f'\n\n\nActions: {selected_actions}\n')
