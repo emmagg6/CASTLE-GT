@@ -17,111 +17,131 @@ from Agents.BlueAgents.GenericAgentGT import GenericAgent
 import random
 
 MAX_EPS = 1000
-agent_name = 'PPOxCCE'
+agent_name = 'PPOxCCEs'
 random.seed(0)
 
+
+blue_agent = 'gt-specific'
+balance_points = list(range(1000, 5100, 100))
+
 # load blue agent
-blue_agent = 'gt'
-agent = GenericAgent(model_dir=blue_agent)
+for balance_point in balance_points:
+    agent = GenericAgent(model_dir=blue_agent, balance=balance_point)
 
-# changed to ChallengeWrapper2
-def wrap(env):
-    return ChallengeWrapper2(env=env, agent_name='Blue')
+    selected_actions = []
 
-def get_git_revision_hash() -> str:
-    return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
+    # changed to ChallengeWrapper2
+    def wrap(env):
+        return ChallengeWrapper2(env=env, agent_name='Blue')
 
-if __name__ == "__main__":
-    cyborg_version = CYBORG_VERSION
-    scenario = 'Scenario2'
-    # commit_hash = get_git_revision_hash()
-    commit_hash = "Not using git"
-    # ask for a name
-    name = "Dartmouth_Northeastern"
-    # ask for a team
-    team = "BlueSTAR"
-    # ask for a name for the agent
-    name_of_agent = "PPO + Greedy decoys + GT"
+    def get_git_revision_hash() -> str:
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD']).decode('ascii').strip()
 
-    lines = inspect.getsource(wrap)
-    wrap_line = lines.split('\n')[1].split('return ')[1]
+    if __name__ == "__main__":
+        cyborg_version = CYBORG_VERSION
+        scenario = 'Scenario2'
+        # commit_hash = get_git_revision_hash()
+        commit_hash = "Not using git"
+        # ask for a name
+        name = "Dartmouth_Northeastern"
+        # ask for a team
+        team = "BlueSTAR"
+        # ask for a name for the agent
+        name_of_agent = "PPO + Greedy decoys + GT"
+
+        lines = inspect.getsource(wrap)
+        wrap_line = lines.split('\n')[1].split('return ')[1]
 
 
-    print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
+        print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-    file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'_{agent_name}_10th_full.txt'
-    print(f'Saving evaluation results to {file_name}')
-    with open(file_name, 'a+') as data:
-        data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
-        data.write(f'author: {name}, team: {team}, technique: {name_of_agent}\n')
-        data.write(f"wrappers: {wrap_line}\n")
+        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'{agent_name}_balance{balance_point}.txt'
+        print(f'Saving evaluation results to {file_name}')
+        with open(file_name, 'a+') as data:
+            data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
+            data.write(f'author: {name}, team: {team}, technique: {name_of_agent}\n')
+            data.write(f"wrappers: {wrap_line}\n")
+            data.write(f"Balance Point, {balance_point}\n\n\n")
 
-    path = str(inspect.getfile(CybORG))
-    path = path[:-10] + f'/Shared/Scenarios/{scenario}.yaml'
+        path = str(inspect.getfile(CybORG))
+        path = path[:-10] + f'/Shared/Scenarios/{scenario}.yaml'
 
-    '''
-    file_name_csv = './results/' + time.strftime("%Y%m%d_%H%M%S") + f'_{agent.__class__.__name__}.csv'
-    print(f'Saving evaluation results to {file_name}')
-    with open(file_name_csv, 'a+') as data:
-        data.write('blue_agent,red_agent,steps,avg_reward,std')
+        '''
+        file_name_csv = './results/' + time.strftime("%Y%m%d_%H%M%S") + f'_{agent.__class__.__name__}.csv'
+        print(f'Saving evaluation results to {file_name}')
+        with open(file_name_csv, 'a+') as data:
+            data.write('blue_agent,red_agent,steps,avg_reward,std')
 
-    '''
+        '''
 
-    red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
-    # red_agents = [(partial(SleepAgent), 'SleepAgent')]
-    # red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
+        red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
+        # red_agents = [(partial(SleepAgent), 'SleepAgent')]
+        # red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
 
-    print(f'using CybORG v{cyborg_version}, {scenario}\n')
-    for num_steps in [30, 50, 100]:
+        cce_action_cnts, ppo_action_cnts = [], []
 
-        for red_agent, name in red_agents:
-            cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
-            wrapped_cyborg = wrap(cyborg)
+        print(f'using CybORG v{cyborg_version}, {scenario}\n')
+        for i, num_steps in enumerate([30, 50, 100]):
 
-            observation = wrapped_cyborg.reset()
-            # observation = cyborg.reset().observation
+            for red_agent, name in red_agents:
+                cyborg = CybORG(path, 'sim', agents={'Red': red_agent})
+                wrapped_cyborg = wrap(cyborg)
 
-            action_space = wrapped_cyborg.get_action_space(agent_name)
-            # action_space = cyborg.get_action_space(agent_name)
-            total_reward = []
-            actions = []
-            for i in range(MAX_EPS):
-                r = []
-                a = []
-                # cyborg.env.env.tracker.render()
-                for j in range(num_steps):
-                    while True:
-                        try:
-                            action_t = agent.get_action(observation, action_space)
-                            observation_t, reward_t, done, info = wrapped_cyborg.step(action_t)
-                            # print(f"Blue Agent Action: {cyborg.get_last_action('Blue')}")
-                            # print(f"Red Agent Action: {cyborg.get_last_action('Red')}")
-                        except KeyError as e:
-                            print(f'Bad action on Episode {i}, step {j}, Action: {action_t}, Error: {e}. Re-rolling.')
-                        else:
-                            break
-                    # result = cyborg.step(agent_name, action)
-                    r.append(reward_t)
-                    # r.append(result.reward)
-                    a.append((str(cyborg.get_last_action('Blue')), str(cyborg.get_last_action('Red'))))
-
-                agent.end_episode()
-                total_reward.append(sum(r))
-                actions.append(a)
-                # observation = cyborg.reset().observation
                 observation = wrapped_cyborg.reset()
+                # observation = cyborg.reset().observation
 
-            print('\n========Final: Average Blue Policy Proportions')
-            ppo_action_cnt, cce_action_cnt = agent.get_proportions()
-            print(f'PPO: {ppo_action_cnt}, CCE: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
+                action_space = wrapped_cyborg.get_action_space(agent_name)
+                # action_space = cyborg.get_action_space(agent_name)
+                total_reward = []
+                actions = []
+                for i in range(MAX_EPS):
+                    r = []
+                    a = []
+                    # cyborg.env.env.tracker.render()
+                    for j in range(num_steps):
+                        while True:
+                            try:
+                                action_t = agent.get_action(observation, action_space)
+                                observation_t, reward_t, done, info = wrapped_cyborg.step(action_t)
+                                # print(f"Blue Agent Action: {cyborg.get_last_action('Blue')}")
+                                # print(f"Red Agent Action: {cyborg.get_last_action('Red')}")
+                            except KeyError as e:
+                                print(f'Bad action on Episode {i}, step {j}, Action: {action_t}, Error: {e}. Re-rolling.')
+                            else:
+                                break
+                        # result = cyborg.step(agent_name, action)
+                        r.append(reward_t)
+                        # r.append(result.reward)
+                        a.append((str(cyborg.get_last_action('Blue')), str(cyborg.get_last_action('Red'))))
+                        selected_actions.append(action_t)
 
-            
-            
-            print(f'Average reward for red agent {name} and steps {num_steps} is: {round(mean(total_reward), 2)} with a standard deviation of {round(stdev(total_reward), 2)}')
+                    agent.end_episode()
+                    total_reward.append(sum(r))
+                    actions.append(a)
+                    # observation = cyborg.reset().observation
+                    observation = wrapped_cyborg.reset()
+
+                print('\n========Final: Average Blue Policy Proportions')
+                ppo_action_cnt, cce_action_cnt = agent.get_proportions()
+                ppo_action_cnts.append(ppo_action_cnt)
+                cce_action_cnts.append(cce_action_cnt)
+                print(f'PPO: {ppo_action_cnt}, CCE: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
+
+                
+                
+                print(f'Average reward for red agent {name} and steps {num_steps} is: {round(mean(total_reward), 2)} with a standard deviation {stdev(r)}')
+                with open(file_name, 'a+') as data:
+                    data.write(f'\nsteps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(r)}\n')
+                    # data.write(f'Balance point: {balance_point}, PPO action-selection count: {ppo_action_cnt}, CCE action-selection count: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
+
+        for i, num_steps in enumerate([30, 50, 100]):
             with open(file_name, 'a+') as data:
-                data.write(f'steps: {num_steps}, adversary: {name}, mean: {mean(total_reward)}, standard deviation {stdev(r)}\n')
+                # data.write('\n')
+                data.write(f'Steps: {num_steps}: PPO action-selection count: {ppo_action_cnt}, CCE action-selection count: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
 
 
-with open(file_name, 'a+') as data:
-    data.write('\n\n\n')
-    data.write(f'PPO action-selection count: {ppo_action_cnt}, CCE action-selection count: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
+
+    with open(file_name, 'a+') as data:
+        data.write('\n\n\n')
+        data.write(f'Note: Balance point: {balance_point}, PPO: 10000.pth, CCE: 10000cce.pkl \n')
+    #     # data.write(f'\n\n\nActions: {selected_actions}\n')

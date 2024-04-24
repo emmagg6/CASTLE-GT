@@ -8,7 +8,7 @@ from CybORG.Agents import RedMeanderAgent, B_lineAgent
 from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 import inspect
 from Agents.BlueAgents.GTAgent import GTAgent
-from Agents.BlueAgents.ApproxCCE import CCE
+from Agents.BlueAgents.ApproxCCEspecific import CCE
 import random
 
 PATH = str(inspect.getfile(CybORG))
@@ -23,6 +23,7 @@ def train(env, input_dims, action_space,
     print('Training started')
 
     agent = GTAgent(input_dims, action_space, lr, betas, gamma, K_epochs, eps_clip, start_actions=start_actions)
+    # cce = CCE(action_space=action_space)
     cce = CCE()
 
     running_reward, time_step = 0, 0
@@ -32,6 +33,14 @@ def train(env, input_dims, action_space,
     for i_episode in range(1, max_episodes + 1):
         if i_episode % 10000 == 0 or i_episode < 10:
             print('Episode:', i_episode)
+        if i_episode < 1501 and i_episode % 100 == 0:
+            # print('Episode:', i_episode)
+            # cce_t = cce_info[tuple(state)][0]
+            # cce_visit_t = cce_info[tuple(state)][1]
+            # print(f'Episode {i_episode} \t Avg reward: {running_reward/i_episode}, CCE approx {cce_t[action]:.3e} for state {state} and action {action} and visits {cce_visit_t[action]}')
+            print(f'Episode {i_episode} \t Avg reward: {running_reward/i_episode} \t CCE approx {cce_info[tuple(state)][str(action)][0]:.3e} for state {state} and action {action} which has {cce_info[tuple(state)][str(action)][1]} visits')
+
+
         state = env.reset()
         for t in range(max_timesteps):
             time_step += 1
@@ -41,7 +50,6 @@ def train(env, input_dims, action_space,
 
             loss = agent.get_loss()
             cce_info = cce.update_eq(state, action, loss)
-            # cce_log.append([action, state, cce_t[state][0][action], cce_t[state][1][action], loss])
 
             if time_step % update_timestep == 0:
                 agent.train()
@@ -53,9 +61,11 @@ def train(env, input_dims, action_space,
         agent.end_episode()
 
         if i_episode % save_interval == 0:
-            cce_t = cce_info[tuple(state)][0]
-            cce_visit_t = cce_info[tuple(state)][1]
-            print(f'Episode {i_episode} \t Avg reward: {running_reward} \t CCE approx {cce_t} for state {state} and state visits {cce_visit_t} for each action')
+            # cce_t = cce_info[tuple(state)][0]
+            # cce_visit_t = cce_info[tuple(state)][1]
+            # print(f'Episode {i_episode} \t Avg reward: {running_reward/i_episode} \t CCE approx {cce_t[action]:.3e} for state {state} and action {action} state visits {cce_visit_t[action]}')
+            print(f'Episode {i_episode} \t Avg reward: {running_reward/i_episode} \t CCE approx {cce_info[tuple(state)][str(action)][0]:.3e} for state {state} and action {action} which has {cce_info[tuple(state)][str(action)][1]} visits')
+            
             ckpt = os.path.join(ckpt_folder, '{}.pth'.format(i_episode))
             torch.save(agent.policy.state_dict(), ckpt)
             #---------------------
@@ -77,7 +87,7 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'gt'
+    folder = 'gt-specific'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)

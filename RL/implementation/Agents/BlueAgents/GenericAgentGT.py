@@ -11,10 +11,12 @@ from .BlueSleepAgent import BlueSleepAgent
 import numpy as np
 import os
 
-from .ApproxCCE import CCE
+# from .ApproxCCE import CCE
+from .ApproxCCEspecific import CCE
+
 
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir, model_file_PPO="10000.pth",  model_file_GT="100000cce.pkl"):
+    def __init__(self, model_dir, balance, model_file_PPO="10000.pth",  model_file_GT="10000cce.pkl"):
         self.model_dir = model_dir
 
         self.model_file_ppo = model_file_PPO
@@ -25,6 +27,8 @@ class GenericAgent(PPOAgent):
 
         self.ppo_action_count = 0
         self.cce_action_count = 0
+
+        self.balance_point = balance
 
         self.action_space = [133, 134, 135, 139, 3, 4, 5, 9, 16, 17, 18, 22, 11, 12, 13, 14, 141, 142, 143, 144,
                              132, 2, 15, 24, 25, 26, 27]
@@ -66,7 +70,8 @@ class GenericAgent(PPOAgent):
     
     def get_action_and_visits_cce(self, observation):
         '''
-        Get the optimal (equilibrium) action from the calculated CCE.
+        Get the optimal (equilibrium) action from the calculated CCE,
+        but only the for those visited more than the threshold (balance).
 
         Returns:
             action: optimal action from the CCE policy
@@ -75,8 +80,11 @@ class GenericAgent(PPOAgent):
         if not self.cce_loaded:
             self.load_CCE()
             self.cce_loaded = True
-        # print("Observation: ", tuple(observation))
-        eq_action, eq_visits = self.cce.get_eq_action_visits(tuple(observation))
+    
+        # avg_eq = 0.010 # ~ half average equilibrium value for those with visit counts over 1000
+        
+        eq_action, eq_visits = self.cce.get_eq_action_visits(tuple(observation), 
+                                                             balance=self.balance_point)
         return eq_action, eq_visits
 
 
@@ -90,12 +98,12 @@ class GenericAgent(PPOAgent):
         Returns:
             action: optimal action from either PPO or CCE policy
         '''
-        balance_point = 1000 
-        
+
         cce_action, cce_visits = self.get_action_and_visits_cce(observation)
-        if cce_visits > balance_point:
+        # print("CCE visits: ", cce_visits)
+        if cce_visits:
             self.cce_action_count += 1
-            return cce_action
+            return int(cce_action)
         else:
             self.ppo_action_count += 1
             return self.get_action_PPO(observation, action_space)
@@ -117,6 +125,8 @@ class GenericAgent(PPOAgent):
 
   # Ensure self.cce is an instance of CCE
     def load_CCE(self):
+        # uncomment for non-specific CCE
+        # self.cce = CCE(action_space=self.action_space+[55, 51, 116])
         self.cce = CCE()
         ckpt = os.path.join(os.getcwd(), "Models", self.model_dir, self.model_file_gt)
         self.cce.load_eq(ckpt)
