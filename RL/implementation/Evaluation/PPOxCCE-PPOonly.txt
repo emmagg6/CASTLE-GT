@@ -1,0 +1,14 @@
+CybORG v2.1, Scenario2, Commit Hash: Not using git
+author: Dartmouth_Northeastern, team: BlueSTAR, technique: PPO + Greedy decoys + GT
+wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
+
+
+steps: 30, adversary: B_lineAgent, mean: -106.10249999999999, standard deviation 0.034574590364176046
+steps: 50, adversary: B_lineAgent, mean: -285.4798, standard deviation 5.472370676071434
+steps: 100, adversary: B_lineAgent, mean: -772.3996999999999, standard deviation 4.744490797682395
+
+
+
+PPO action-selection count: 180000, CCE action-selection count: 0, CCE precent: 0.0
+
+NOTE: Partially trained (10,000)

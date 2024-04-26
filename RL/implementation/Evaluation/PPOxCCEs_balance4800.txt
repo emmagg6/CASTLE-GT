@@ -1,19 +1,21 @@
 CybORG v2.1, Scenario2, Commit Hash: Not using git
 author: Dartmouth_Northeastern, team: BlueSTAR, technique: PPO + Greedy decoys + GT
 wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
-Balance Point, 47000
+Balance Point, 4800
 
 
 
-steps: 30, adversary: B_lineAgent, mean: -46.1696, standard deviation 0.838176729505811
+steps: 30, adversary: B_lineAgent, mean: -159.48669999999998, standard deviation 6.169815288131012
 
-steps: 50, adversary: B_lineAgent, mean: -88.1684, standard deviation 0.6935740032319433
+steps: 50, adversary: B_lineAgent, mean: -366.115, standard deviation 5.509880179444625
 
-steps: 100, adversary: B_lineAgent, mean: -193.234, standard deviation 0.5180879766170525
+steps: 100, adversary: B_lineAgent, mean: -853.0437, standard deviation 4.230640517926238
+
+
 Steps: 30: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
 Steps: 50: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
 Steps: 100: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
 
 
 
-Note: Balance point: 47000, PPO: 100000.pth, CCE: 100000cce.pkl 
+Note: Balance point: 4800, PPO: 10000.pth, CCE: 10000cce.pkl 
