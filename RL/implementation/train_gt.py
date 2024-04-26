@@ -4,7 +4,7 @@ import torch
 import numpy as np
 import os
 from CybORG import CybORG
-from CybORG.Agents import RedMeanderAgent, B_lineAgent
+from CybORG.Agents import RedMeanderAgent, B_lineAgent, SleepAgent
 from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 import inspect
 from Agents.BlueAgents.GTAgent import GTAgent
@@ -87,13 +87,15 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'gt-specific'
+    folder = 'gt-specific-sleep'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
 
     CYBORG = CybORG(PATH, 'sim', agents={
-        'Red': B_lineAgent
+        # 'Red': B_lineAgent
+        # 'Red': RedMeanderAgent
+        'Red': SleepAgent
     })
     env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
     input_dims = env.observation_space.shape[0]

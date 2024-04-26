@@ -21,8 +21,9 @@ agent_name = 'PPOxCCEs'
 random.seed(0)
 
 
-blue_agent = 'gt-specific'
-balance_points = list(range(51000, 101000, 1000))
+blue_agent = 'gt-specific-meander'
+balance_points = list(range(1000, 10100, 100))
+# balance_points = [1000000000] # for just PPO
 
 # load blue agent
 for balance_point in balance_points:
@@ -55,7 +56,7 @@ for balance_point in balance_points:
 
         print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'full{agent_name}_balance{balance_point}.txt'
+        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'M-{agent_name}s_balance{balance_point}.txt'
         print(f'Saving evaluation results to {file_name}')
         with open(file_name, 'a+') as data:
             data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
@@ -74,9 +75,9 @@ for balance_point in balance_points:
 
         '''
 
-        red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
+        # red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
         # red_agents = [(partial(SleepAgent), 'SleepAgent')]
-        # red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
+        red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
 
         cce_action_cnts, ppo_action_cnts = [], []
 
@@ -136,12 +137,12 @@ for balance_point in balance_points:
 
         for i, num_steps in enumerate([30, 50, 100]):
             with open(file_name, 'a+') as data:
-                # data.write('\n')
+                data.write('\n')
                 data.write(f'Steps: {num_steps}: PPO action-selection count: {ppo_action_cnt}, CCE action-selection count: {cce_action_cnt}, CCE precent: {round(cce_action_cnt / (ppo_action_cnt + cce_action_cnt), 2)}\n')
 
 
 
     with open(file_name, 'a+') as data:
         data.write('\n\n\n')
-        data.write(f'Note: Balance point: {balance_point}, PPO: 100000.pth, CCE: 100000cce.pkl \n')
+        data.write(f'Note: Red is Meander Agent. Balance point: {balance_point}, PPO: 10000.pth, CCE: 10000cce.pkl \n')
     #     # data.write(f'\n\n\nActions: {selected_actions}\n')

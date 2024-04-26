@@ -16,7 +16,7 @@ from .ApproxCCEspecific import CCE
 
 
 class GenericAgent(PPOAgent):
-    def __init__(self, model_dir, balance, model_file_PPO="100000.pth",  model_file_GT="100000cce.pkl"):
+    def __init__(self, model_dir, balance, model_file_PPO="10000.pth",  model_file_GT="10000cce.pkl"):
         self.model_dir = model_dir
 
         self.model_file_ppo = model_file_PPO

@@ -8,5 +8,5 @@ To install CybORG (v2) : https://github.com/cage-challenge/cage-challenge-2/blob
 
 ### IN THIS FOLDER
 
-This RL folder contains a 'operations' folder which is the 'maintaining-operations' folder in our private repo -- contains editted 'CybORG' and 'extenstions' to evaluating PPO Blue Agents and the 'BlueGen' Agent. The cotraining framework that works is in the folder 'cotraining-framework-2'. A 'fresh' import of CybORG from CC2 is added as a submodule from the CASTLE CHALLENGE 2 repository in the 'CyBORG' folder.
+This RL folder contains a 'implementation' folder and 'cage-challenge-2-main' adapted from our private repo -- contains editted 'CybORG' and training and evaluating methods for our PPO Blue Agents and Approximate CCE methods. A 'fresh' import of CybORG from CC2 is added as a submodule from the CASTLE CHALLENGE 2 repository in the 'CyBORG' folder.
 
