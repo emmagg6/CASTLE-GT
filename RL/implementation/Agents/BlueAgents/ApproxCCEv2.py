@@ -5,6 +5,8 @@ import pickle
 class CCE():
     def __init__(self):
         self.cce = {}  # Dictionary to store state to (action to [eq_approx, visit_count])
+        self.eta = 0.01
+        self.gamma = self.eta / 2
 
     def initialize_or_update_cce(self, state, action):
         s = tuple(state)
@@ -21,7 +23,8 @@ class CCE():
                 avg_approx = 1.0
             self.cce[s][action] = [avg_approx, 0]
 
-    def update_eq(self, state, action, loss, eta=0.001, gamma=0.001):
+    def update_eq(self, state, action, loss, T=10000):
+
         s = tuple(state)
         a = str(action)
         self.initialize_or_update_cce(s, a)
@@ -37,11 +40,15 @@ class CCE():
         total_eq_approx = sum(eq_approx_dict.values())
         policy = {act: eq_approx_dict[act] / total_eq_approx for act in eq_approx_dict}
 
-        estimated_loss = loss / (policy[a] + gamma)
+        # Hyperparamter updates:
+        # self.gamma = np.sqrt(2 * np.log(len(policy)) / len(policy) * T)
+        # self.eta = 2 * self.gamma
+
+        estimated_loss = loss / (policy[a] + self.gamma)
 
         # Update the log probabilities
         log_probs = {act: np.log(policy[act] + 1e-50) for act in policy}
-        log_probs[a] -= eta * estimated_loss
+        log_probs[a] -= self.eta * estimated_loss
 
         # Normalize and exponentiate log probabilities
         max_log_prob = max(log_probs.values())

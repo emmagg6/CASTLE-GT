@@ -8,7 +8,7 @@ from CybORG.Agents import RedMeanderAgent, B_lineAgent, SleepAgent
 from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 import inspect
 from Agents.BlueAgents.GTAgent import GTAgent
-from Agents.BlueAgents.ApproxCCEspecific import CCE
+from Agents.BlueAgents.ApproxCCEv2 import CCE
 import random
 
 PATH = str(inspect.getfile(CybORG))
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'gt-specific-sleep'
+    folder = 'cce-bline'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
