@@ -18,10 +18,13 @@ import numpy as np
 import os
 from Agents.BlueAgents.ApproxCCEv2 import CCE
 
-# model_dir = "cce-bline"
-# model_dir = "gt-specific"
-# model_dir = "gt-specific-meander"
-model_dir = "gt-specific-sleep"
+######## Select Model to Check ########
+model_dir = "cce-bline"
+# model_dir = "gt-specific"                 # b-line == greedy agent
+# model_dir = "gt-specific-meander"         # meander == random agent
+# model_dir = "gt-specific-sleep"             # sleep == no action agent
+#######################################
+
 model_file_GT = "10000cce.pkl"
 
 # Load the CCE approximation
@@ -29,7 +32,7 @@ approx = CCE()
 ckpt = os.path.join(os.getcwd(), "Models", model_dir, model_file_GT)
 approx.load_eq(ckpt)
 
-print("Evaulation of the CCE approximation for" +model_dir)
+print("Evaulation of the CCE approximation for" + model_dir)
 
 
 # Get the CCE approximation for a state

@@ -42,10 +42,11 @@ class CCE():
         policy = {act: eq_approx_dict[act] / total_eq_approx for act in eq_approx_dict}
 
         # Hyperparamter updates:
-        # print(len(policy))
-        if len(policy) > 1:
-            self.gamma = np.sqrt(2 * np.log(len(policy)) / (len(policy) * T))
-            self.eta = 2 * self.gamma
+        # if len(policy) > 1:
+        #     self.gamma = np.sqrt(2 * np.log(len(policy)) / (len(policy) * T))
+        #     self.eta = 2 * self.gamma
+        self.gamma = np.sqrt(2 * np.log(len(policy)) / (len(policy) * T))
+        self.eta = 2 * self.gamma
 
         # print(f"Gamma: {self.gamma}, Eta: {self.eta}")
 

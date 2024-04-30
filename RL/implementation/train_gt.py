@@ -87,15 +87,15 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'cce-bline'
+    folder = 'cce-random'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)
 
     CYBORG = CybORG(PATH, 'sim', agents={
         # 'Red': B_lineAgent
-        # 'Red': RedMeanderAgent
-        'Red': SleepAgent
+        'Red': RedMeanderAgent
+        # 'Red': SleepAgent
     })
     env = ChallengeWrapper2(env=CYBORG, agent_name="Blue")
     input_dims = env.observation_space.shape[0]
