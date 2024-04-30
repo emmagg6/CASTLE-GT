@@ -49,7 +49,7 @@ def train(env, input_dims, action_space,
             agent.store(reward, done)
 
             loss = agent.get_loss()
-            cce_info = cce.update_eq(state, action, loss)
+            cce_info = cce.update_eq(state, action, loss, T = max_episodes)
 
             if time_step % update_timestep == 0:
                 agent.train()
@@ -113,7 +113,7 @@ if __name__ == '__main__':
 
     print_interval = 10000 #50
     save_interval = 10000 #200
-    max_episodes = 100000
+    max_episodes = 10000 # 100000
     max_timesteps = 100
     # 200 episodes for buffer
     update_timesteps = 20000

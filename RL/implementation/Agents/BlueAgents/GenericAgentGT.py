@@ -12,7 +12,7 @@ import numpy as np
 import os
 
 # from .ApproxCCE import CCE
-from .ApproxCCEspecific import CCE
+from .ApproxCCEv2 import CCE
 
 
 class GenericAgent(PPOAgent):

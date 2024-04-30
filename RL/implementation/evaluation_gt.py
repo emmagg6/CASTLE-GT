@@ -17,11 +17,11 @@ from Agents.BlueAgents.GenericAgentGT import GenericAgent
 import random
 
 MAX_EPS = 1000
-agent_name = 'PPOxCCEs'
+agent_name = 'B-PPOxCCE'
 random.seed(0)
 
 
-blue_agent = 'gt-specific-meander'
+blue_agent = 'cce-bline'
 balance_points = list(range(1000, 10100, 100))
 # balance_points = [1000000000] # for just PPO
 
@@ -56,7 +56,7 @@ for balance_point in balance_points:
 
         print(f'Using agent {agent_name}, if this is incorrect please update the code to load in your agent')
 
-        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'M-{agent_name}s_balance{balance_point}.txt'
+        file_name = str(inspect.getfile(CybORG))[:-10] + '/Evaluation/' f'{agent_name}_balance{balance_point}.txt'
         print(f'Saving evaluation results to {file_name}')
         with open(file_name, 'a+') as data:
             data.write(f'CybORG v{cyborg_version}, {scenario}, Commit Hash: {commit_hash}\n')
@@ -75,9 +75,9 @@ for balance_point in balance_points:
 
         '''
 
-        # red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
+        red_agents = [(partial(B_lineAgent), 'B_lineAgent')]
         # red_agents = [(partial(SleepAgent), 'SleepAgent')]
-        red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
+        # red_agents = [(partial(RedMeanderAgent), 'RedMeanderAgent')]
 
         cce_action_cnts, ppo_action_cnts = [], []
 

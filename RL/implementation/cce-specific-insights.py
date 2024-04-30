@@ -16,8 +16,9 @@ cce[state][0][action] = 0.5, and its corresponding visit count is, say, cce[stat
 
 import numpy as np
 import os
-from Agents.BlueAgents.ApproxCCEspecific import CCE
+from Agents.BlueAgents.ApproxCCEv2 import CCE
 
+# model_dir = "cce-bline"
 model_dir = "gt-specific"
 model_file_GT = "10000cce.pkl"
 
@@ -26,22 +27,28 @@ approx = CCE()
 ckpt = os.path.join(os.getcwd(), "Models", model_dir, model_file_GT)
 approx.load_eq(ckpt)
 
+print("Evaulation of the CCE approximation for" +model_dir)
+
 
 # Get the CCE approximation for a state
-state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 s = tuple(state)
-print("State: ", state)
 states_eq = [approx.cce[s][a][0] for a in approx.cce[s]]
 states_visits = [approx.cce[s][a][1] for a in approx.cce[s]]
-print
+print("What are the CCE approximations for a state?")
+print("State: ", state)
 print(f"CCE approximations: {states_eq}")
+print(f"\nWhat about the visits for each action in the state?")
 print("CCE visits: ", states_visits)
+print("\n")
 
 # Wholistically, how many states have been visited?
+print("How many states have been visited?")
 states = list(approx.cce.keys())
 print("Number of states visited: ", len(states))
 
 # How many states have non-zero equilibria?
+print("\nHow many states have non-zero equilibria?")
 non_zero_eq = 0
 for s in states:
     for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
@@ -50,6 +57,7 @@ for s in states:
 print("Number of states with non-zero equilibria: ", non_zero_eq)
 
 # Average equilibrium value
+print("\nAverage equilibrium value: ")
 average_eq = 0
 num = 0
 for s in states:
@@ -59,20 +67,36 @@ for s in states:
 average_eq = average_eq / num
 print("Average equilibrium value: ", average_eq)
 
-# Average equilibrium value for states with over 100 visits
-average_eq = 0
-num = 0
-balance = 1000
+# Average equilibrium value for states with over 5000 visits
+average_eq1, average_eq2, average_eq3 = 0, 0, 0
+num1, num2, num3 = 0, 0, 0
+balance1 = 100
+balance2 = 5000
+balance3 = 25000
+print(f"\nWhat is the average equilibrium value for states with over {balance1} visits? What about {balance2} visits? What about {balance3} visits?")
 for s in states:
     for a in approx.cce[s]:
-        if approx.cce[s][a][1] > balance:
+        if approx.cce[s][a][1] > balance1:
             for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
-                average_eq += np.sum(eq)
-                num += 1
-average_eq = average_eq / num
-print(f"Average equilibrium value for states with over {balance} visits: ", average_eq)
+                average_eq1 += np.sum(eq)
+                num1 += 1
+        if approx.cce[s][a][1] > balance2:
+            for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
+                average_eq2 += np.sum(eq)
+                num2 += 1
+        if approx.cce[s][a][1] > balance3:
+            for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
+                average_eq3 += np.sum(eq)
+                num3 += 1
+average_eq1 = average_eq1 / num1
+average_eq2 = average_eq2 / num2
+average_eq3 = average_eq3 / num3
+# print(f"Average equilibrium value for states with over {balance1} visits: ", average_eq1)
+print(f"Average equilibrium value for states with over {balance2} visits: ", average_eq2)
+# print(f"Average equilibrium value for states with over {balance3} visits: ", average_eq3)
 
 # what is the hightest equilibrium value?
+print("\nWhat is the highest equilibrium value?")
 highest_eq = 0
 for s in states:
     for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
@@ -80,7 +104,17 @@ for s in states:
             highest_eq = np.max(eq)
 print("Highest equilibrium value: ", highest_eq)
 
+# what is the lowest equilibrium value?
+print("\nWhat is the lowest equilibrium value?")
+lowest_eq = 100000
+for s in states:
+    for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
+        if np.min(eq) < lowest_eq:
+            lowest_eq = np.min(eq)
+print("Lowest equilibrium value: ", lowest_eq)
+
 # what is the highest, lowest, and average visit counts for each state?
+print("\nWhat is the highest, lowest, and average visit counts for each state?")
 highest_visits = 0
 lowest_visits = 100000
 avereage_visits = 0

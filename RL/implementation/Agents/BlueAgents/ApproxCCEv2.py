@@ -5,8 +5,9 @@ import pickle
 class CCE():
     def __init__(self):
         self.cce = {}  # Dictionary to store state to (action to [eq_approx, visit_count])
-        self.eta = 0.01
-        self.gamma = self.eta / 2
+        
+        self.gamma = 0.01
+        self.eta = self.gamma
 
     def initialize_or_update_cce(self, state, action):
         s = tuple(state)
@@ -23,7 +24,7 @@ class CCE():
                 avg_approx = 1.0
             self.cce[s][action] = [avg_approx, 0]
 
-    def update_eq(self, state, action, loss, T=10000):
+    def update_eq(self, state, action, loss, T=1000):
 
         s = tuple(state)
         a = str(action)
@@ -41,8 +42,9 @@ class CCE():
         policy = {act: eq_approx_dict[act] / total_eq_approx for act in eq_approx_dict}
 
         # Hyperparamter updates:
-        # self.gamma = np.sqrt(2 * np.log(len(policy)) / len(policy) * T)
-        # self.eta = 2 * self.gamma
+        if len(policy) > 1:
+            self.gamma = np.sqrt(2 * np.log(len(policy)) / len(policy) * T)
+            self.eta = 2 * self.gamma
 
         estimated_loss = loss / (policy[a] + self.gamma)
 
