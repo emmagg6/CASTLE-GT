@@ -53,13 +53,13 @@ states = list(approx.cce.keys())
 print("Number of states visited: ", len(states))
 
 # How many states have non-zero equilibria?
-print("\nHow many states have non-zero equilibria?")
+print("\nHow many states-action paires have non-zero equilibria?")
 non_zero_eq = 0
 for s in states:
     for eq in [approx.cce[s][a][0] for a in approx.cce[s]]:
         if np.sum(eq) > 0:
             non_zero_eq += 1
-print("Number of states with non-zero equilibria: ", non_zero_eq)
+print("Number of state-action pairs with non-zero equilibria: ", non_zero_eq)
 
 # Average equilibrium value
 print("\nOut of all cce values, what is the average equilibrium value?")
