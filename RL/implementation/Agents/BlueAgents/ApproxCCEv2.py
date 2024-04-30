@@ -7,7 +7,7 @@ class CCE():
         self.cce = {}  # Dictionary to store state to (action to [eq_approx, visit_count])
         
         self.gamma = 0.01
-        self.eta = self.gamma
+        self.eta = self.gamma * 2
 
     def initialize_or_update_cce(self, state, action):
         s = tuple(state)
@@ -24,7 +24,7 @@ class CCE():
                 avg_approx = 1.0
             self.cce[s][action] = [avg_approx, 0]
 
-    def update_eq(self, state, action, loss, T=1000):
+    def update_eq(self, state, action, loss, T=10000):
 
         s = tuple(state)
         a = str(action)
@@ -42,9 +42,12 @@ class CCE():
         policy = {act: eq_approx_dict[act] / total_eq_approx for act in eq_approx_dict}
 
         # Hyperparamter updates:
+        # print(len(policy))
         if len(policy) > 1:
-            self.gamma = np.sqrt(2 * np.log(len(policy)) / len(policy) * T)
+            self.gamma = np.sqrt(2 * np.log(len(policy)) / (len(policy) * T))
             self.eta = 2 * self.gamma
+
+        # print(f"Gamma: {self.gamma}, Eta: {self.eta}")
 
         estimated_loss = loss / (policy[a] + self.gamma)
 

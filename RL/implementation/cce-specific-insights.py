@@ -19,7 +19,9 @@ import os
 from Agents.BlueAgents.ApproxCCEv2 import CCE
 
 # model_dir = "cce-bline"
-model_dir = "gt-specific"
+# model_dir = "gt-specific"
+# model_dir = "gt-specific-meander"
+model_dir = "gt-specific-sleep"
 model_file_GT = "10000cce.pkl"
 
 # Load the CCE approximation
@@ -35,12 +37,12 @@ state = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 s = tuple(state)
 states_eq = [approx.cce[s][a][0] for a in approx.cce[s]]
 states_visits = [approx.cce[s][a][1] for a in approx.cce[s]]
-print("What are the CCE approximations for a state?")
+print("What are the CCE approximations for a state?\n")
 print("State: ", state)
-print(f"CCE approximations: {states_eq}")
+print(f"\nCCE approximations: {states_eq}")
 print(f"\nWhat about the visits for each action in the state?")
 print("CCE visits: ", states_visits)
-print("\n")
+print("\n\n")
 
 # Wholistically, how many states have been visited?
 print("How many states have been visited?")
@@ -57,7 +59,7 @@ for s in states:
 print("Number of states with non-zero equilibria: ", non_zero_eq)
 
 # Average equilibrium value
-print("\nAverage equilibrium value: ")
+print("\nOut of all cce values, what is the average equilibrium value?")
 average_eq = 0
 num = 0
 for s in states:
@@ -91,9 +93,9 @@ for s in states:
 average_eq1 = average_eq1 / num1
 average_eq2 = average_eq2 / num2
 average_eq3 = average_eq3 / num3
-# print(f"Average equilibrium value for states with over {balance1} visits: ", average_eq1)
+print(f"Average equilibrium value for states with over {balance1} visits: ", average_eq1)
 print(f"Average equilibrium value for states with over {balance2} visits: ", average_eq2)
-# print(f"Average equilibrium value for states with over {balance3} visits: ", average_eq3)
+print(f"Average equilibrium value for states with over {balance3} visits: ", average_eq3)
 
 # what is the hightest equilibrium value?
 print("\nWhat is the highest equilibrium value?")
