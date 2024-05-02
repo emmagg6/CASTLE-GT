@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Directory containing the files
-directory = "/scratch/egraham/CASTLE-GT/RL/implementation/Evaluation"
+directory = "/scratch/egraham/CASTLE-GT/RL/implementation/Evaluation/plotting"
 
 if not os.path.exists(directory):
     print(f"Directory does not exist: {directory}")
@@ -55,9 +55,9 @@ else:
 
     plt.title('Rewards vs CCE Certainty')
     plt.xlabel('Minimum observation-action visits (certainty) of CCE')
-    plt.ylabel('Rewards (after 30 steps)')
+    plt.ylabel('Rewards (over 30 steps)')
     plt.grid(True)
     plt.legend(loc='lower right', fontsize='small')
 
-    plt.savefig('/scratch/egraham/CASTLE-GT/RL/implementation/Results/plot-full.png')
+    plt.savefig('/scratch/egraham/CASTLE-GT/RL/implementation/Results/plot-partial.png')
     print("Plot saved to CASTLE-GT/RL/implementation/Results/")
