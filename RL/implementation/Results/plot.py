@@ -15,7 +15,7 @@ else:
 
     # Iterate over each file in the directory
     for filename in sorted(os.listdir(directory)):
-        if filename.startswith("M-PPOxCCEs_balance") and filename.endswith(".txt"):
+        if filename.startswith("B-PPOxCCE_balance") and filename.endswith(".txt"):
             file_path = os.path.join(directory, filename)
             balance = int(filename.split('balance')[1].split('.')[0])
 
@@ -59,5 +59,5 @@ else:
     plt.grid(True)
     plt.legend(loc='lower right', fontsize='small')
 
-    plt.savefig('/scratch/egraham/CASTLE-GT/RL/implementation/Results/plot-greedy.png')
+    plt.savefig('/scratch/egraham/CASTLE-GT/RL/implementation/Results/plot-full.png')
     print("Plot saved to CASTLE-GT/RL/implementation/Results/")
