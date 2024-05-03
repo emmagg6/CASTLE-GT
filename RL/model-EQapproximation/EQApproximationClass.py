@@ -6,7 +6,7 @@ class EqApproximation:
     """
     # load states instaed of initialize it 
     # future optimize the code by using a dictionary to store the policy and visit count
-    def __init__(self, states, num_actions, eta, gamma):
+    def __init__(self, states, num_actions, eta, gamma, T):
         self.eq_approx = {}                     # dictionary tracks a str-state to a specific equilibrium approximation
         self.visit_count = {}                   # Maps state to a visit count np.array
         self.sumOfPolicy = {}                   # sum of the policy for all actions
@@ -19,8 +19,9 @@ class EqApproximation:
             self.sumOfPolicy[state] = np.zeros(num_actions)  # sum of the policy for all actions
 
         # for EXP3-IX algoritm
-        self.eta = eta                          # Learning rate
-        self.gamma = gamma                      # Exploration parameter
+        self.total_time = T
+        self.gamma = np.sqrt((2 * np.log(num_actions))/(num_actions + self.total_time)) 
+        self.eta = gamma * 2
         self.num_actions = num_actions          # Number of actions
 
     def get_action(self, state):
@@ -78,16 +79,20 @@ class EqApproximation:
         currentPolicy = self.eq_approx_unknown[state] / np.sum(self.eq_approx_unknown[state])                                    # normalize the policy to a probability distribution
         self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
 
+        ##### update hyperparameters #####
+        self.gamma = np.sqrt((2 * np.log(len(currentPolicy)))/(len(currentPolicy) + self.total_time))
+        self.eta = self.gamma * 2
+        ##################################
+
         action_prob = currentPolicy[action]
 
-        estimated_loss = loss / ((action_prob+ 1e-50) + self.gamma)
+        estimated_loss = loss / ((action_prob + 1e-50) + self.gamma)
 
         log_probs = {act: np.log(currentPolicy[act] + 1e-50) for act in currentPolicy}
-        log_probs[a] -= self.eta * estimated_loss
+        log_probs[action] -= self.eta * estimated_loss
 
         max_log_prob = max(log_probs.values())
         for act in currentPolicy:
             self.eq_approx_unknown[state][act] = np.exp(log_probs[act] - max_log_prob)
 
-        # self.eq_approx[state][action] = np.exp(-self.eta * estimated_loss)
     

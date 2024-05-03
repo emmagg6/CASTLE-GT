@@ -22,7 +22,7 @@ random.seed(0)
 
 
 blue_agent = 'cce-bline'
-balance_points = list(range(1000, 10100, 100))
+balance_points = list(range(11000, 20000, 1000))
 # balance_points = [1000000000] # for just PPO
 
 # load blue agent
