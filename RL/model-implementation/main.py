@@ -139,5 +139,5 @@ lossEQobserver = EQasObserver(total_iteration=10000)
 
 
 losses_list = [lossEQAgent, lossEQobserver]
-names_list = ["EQ Agent", "EQ Observer"]
+names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 plot_graph(losses_list, names_list)
