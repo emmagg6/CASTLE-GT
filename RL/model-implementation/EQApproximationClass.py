@@ -6,12 +6,13 @@ class EqApproximation:
     """
     # load states instaed of initialize it 
     # future optimize the code by using a dictionary to store the policy and visit count
-    def __init__(self, states, num_actions, eta, gamma, T):
+    def __init__(self, states, num_actions, T):
         self.eq_approx = {}                     # dictionary tracks a str-state to a specific equilibrium approximation
         self.visit_count = {}                   # Maps state to a visit count np.array
         self.sumOfPolicy = {}                   # sum of the policy for all actions
 
         self.eq_approx_unknown = {}
+        self.visit_count_unknown = {}
 
         for state in states:
             self.eq_approx[state] = np.full(num_actions, 1.0 / num_actions)                                         # initialize the policy to be uniform
@@ -21,7 +22,9 @@ class EqApproximation:
         # for EXP3-IX algoritm
         self.total_time = T
         self.gamma = np.sqrt((2 * np.log(num_actions))/(num_actions + self.total_time)) 
-        self.eta = gamma * 2
+        self.gamma_adapting = self.gamma
+        self.eta = self.gamma * 2
+        self.eta_adapting = self.eta
         self.num_actions = num_actions          # Number of actions
 
     def get_action(self, state):
@@ -46,42 +49,54 @@ class EqApproximation:
         self.eq_approx[state][chosen_action] *= np.exp(-self.eta * estimated_loss)                              # update the policy for the chosen action
 
 
-    def observe_and_update(self, state, action, loss):
-        """
-            used when the agent is not the one interacting with the environment
-        """
+    # def observe_and_update(self, state, action, loss):
+    #     """
+    #         used when the agent is not the one interacting with the environment
+    #     """
         
-        self.visit_count[state][action] += 1
+    #     self.visit_count[state][action] += 1
         
-        currentPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                                    # normalize the policy to a probability distribution
-        self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
+    #     currentPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                                    # normalize the policy to a probability distribution
+    #     self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
 
-        action_prob = currentPolicy[action]
+    #     action_prob = currentPolicy[action]
 
-        estimated_loss = loss / ((action_prob+ 1e-50) + self.gamma)
+    #     estimated_loss = loss / ((action_prob+ 1e-50) + self.gamma)
 
-        self.eq_approx[state][action] *= np.exp(-self.eta * estimated_loss)
+    #     self.eq_approx[state][action] *= np.exp(-self.eta * estimated_loss)
   
         
     def observe_and_update_adaptation(self, state, action, loss):
         """
             extension for larger environments
         """
-        
-        self.visit_count[state][action] += 1
+        state = str(state)
 
-        if state not in self.eq_approx_unknown: # if state is unknown, then no actions are here so initialize as 1
-            self.eq_approx_unknown[state][action] = 1.0
-            if action not in self.eq_approx_unknown[state]: # if new action then initialize as the mean of the current approx values for this state
-                self.eq_approx_unknown[state][action] = np.mean([self.eq_approx_unknown[state][act] for act in self.eq_approx_unknown[state]])
-             
-        
-        currentPolicy = self.eq_approx_unknown[state] / np.sum(self.eq_approx_unknown[state])                                    # normalize the policy to a probability distribution
-        self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
+        # Initialize state and action in visit_count_unknown if not already present
+        if state not in self.visit_count_unknown:
+            self.visit_count_unknown[state] = {}
+        if action not in self.visit_count_unknown[state]:
+            self.visit_count_unknown[state][action] = 0
+
+        # Increment the visit count
+        self.visit_count_unknown[state][action] += 1
+
+        # Ensure the eq_approx_unknown dictionary is properly initialized
+        if state not in self.eq_approx_unknown:
+            self.eq_approx_unknown[state] = {}
+        if action not in self.eq_approx_unknown[state]:
+            self.eq_approx_unknown[state][action] = 1.0  # Initial value for unknown action
+        else:
+            # Initialize action value as the mean of existing action values for the state
+            self.eq_approx_unknown[state][action] = np.mean(list(self.eq_approx_unknown[state].values()))
+
+        total_sum = np.sum(list(self.eq_approx_unknown[state].values()))
+        currentPolicy = {act: val / total_sum for act, val in self.eq_approx_unknown[state].items()}
+                                                           # sum of the policy for all actions
 
         ##### update hyperparameters #####
-        self.gamma = np.sqrt((2 * np.log(len(currentPolicy)))/(len(currentPolicy) + self.total_time))
-        self.eta = self.gamma * 2
+        self.gamma_adapting = np.sqrt((2 * np.log(len(currentPolicy)))/(len(currentPolicy) + self.total_time))
+        self.eta_adapting = self.gamma * 2
         ##################################
 
         action_prob = currentPolicy[action]

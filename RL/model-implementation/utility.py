@@ -19,11 +19,11 @@ def plot_graph(losses_list, names_list):
     plt.title('Cumulative Loss Over Time Steps')
     plt.legend()
     plt.grid(True)
-
+    plt.savefig('cumulative_loss.png')
     plt.show()
 
 
-def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints,blueAgentActions):
+def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAgentActions):
     """
     Plot the scaled sum of policy over time for each state.
 

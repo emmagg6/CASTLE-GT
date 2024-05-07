@@ -11,3 +11,6 @@ class RedAgent:
         if self.current_tick % self.interval == 0:
             return 1
         return 0
+    
+
+    
