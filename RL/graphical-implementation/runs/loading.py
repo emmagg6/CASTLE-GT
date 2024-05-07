@@ -14,8 +14,8 @@ class loading():
         with open(os.path.join(path, 'SARSA_cce.pkl'), 'rb') as f:
             self.cces = pickle.load(f)
 
-        with open(os.path.join(path, 'graph.pkl'), 'rb') as f:
-            self.graph = pickle.load(f)
+        with open(os.path.join(path, 'graphs.pkl'), 'rb') as f:
+            self.graphs = pickle.load(f)
 
     def load_all(self, path):
         with open(os.path.join(path, 'SARSA_dists.pkl'), 'rb') as f:
@@ -39,6 +39,6 @@ class loading():
         with open(os.path.join(path, 'all_zetas.pkl'), 'rb') as f:
             self.list_zetas = pickle.load(f)
 
-        with open(os.path.join(path, 'graph.pkl'), 'rb') as f:
-            self.graph = pickle.load(f)
+        with open(os.path.join(path, 'graphs.pkl'), 'rb') as f:
+            self.graphs = pickle.load(f)
 

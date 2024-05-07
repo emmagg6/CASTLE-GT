@@ -436,7 +436,7 @@ def test(cce, q_table, state_actions_dist, graph, start_coordinates, goal_coordi
 
 TRIALS = 3
 
-zetas = np.arange(100, 3000, 1000)
+zetas = np.arange(1000, 5000, 1000)
 
 num_inner_sites = 7
 temp = 0.01
@@ -448,19 +448,9 @@ ALL_ZETAS = []
 
 Q_tables = load.Q_tables
 CCEs = load.cces
-graph = load.graph
+graphs = load.graphs
 
 ############################## START LOOP ##############################
-
-### Create Environment ###
-VOR = Voronoi_Diagram(M_amnt = num_inner_sites)
-Y = VOR.generate_points_on_circle()
-
-x_0 = VOR.generate_points_in_circle(M_seed = 0)
-
-dia, sites = VOR.voronoi_diag(Y, x_0)
-voronoi_diagram = dia 
-voronoi_diagrams_sites = sites
 
 ### Trials ###
 for trial in range(TRIALS) :
@@ -471,6 +461,7 @@ for trial in range(TRIALS) :
 
     cce =CCEs[trial]
     q_table = Q_tables[trial]
+    graph = graphs[trial]
 
     North_index, North_coord, South_index, South_coord, East_index, East_coord, West_index, West_coord = find_extreme_vertices(voronoi_diagram)
     state_actions_dist = neighbors(graph)

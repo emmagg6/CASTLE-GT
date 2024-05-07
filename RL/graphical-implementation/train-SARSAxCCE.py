@@ -682,18 +682,13 @@ temp = 0.01
 
 ALL_Q_TABLES = []
 ALL_CCE = []
+ALL_GRAPHS = []
 
 ############################## START LOOP ##############################
 
 ### Create Environment ###
 VOR = Voronoi_Diagram(M_amnt = num_inner_sites)
 Y = VOR.generate_points_on_circle()
-
-x_0 = VOR.generate_points_in_circle(M_seed = 0)
-
-dia, sites = VOR.voronoi_diag(Y, x_0)
-voronoi_diagram = dia 
-voronoi_diagrams_sites = sites
 
 ### Trials ###
 for trial in range(TRIALS) :
@@ -702,6 +697,12 @@ for trial in range(TRIALS) :
 
     star = 0
     hex = 0
+
+    x_0 = VOR.generate_points_in_circle(M_seed = 0)
+
+    dia, sites = VOR.voronoi_diag(Y, x_0)
+    voronoi_diagram = dia 
+    voronoi_diagrams_sites = sites
 
 
     label = label_voronoi_sites(voronoi_diagrams_sites, voronoi_diagram, voronoi_diagrams_sites)
@@ -725,6 +726,7 @@ for trial in range(TRIALS) :
     
     ALL_Q_TABLES.append(q_table)
     ALL_CCE.append(cce)
+    ALL_GRAPHS.append(graph)
 
 ###################### SAVE OUTPUTS ######################
 
@@ -739,5 +741,5 @@ with open(os.path.join(folder, 'SARSA_q_tables.pkl'), 'wb') as f:
 with open(os.path.join(folder, 'SARSA_cce.pkl'), 'wb') as f:
     pickle.dump(ALL_CCE, f)
 
-with open(os.path.join(folder, 'graph.pkl'), 'wb') as f:
-    pickle.dump(graph, f)
+with open(os.path.join(folder, 'graphs.pkl'), 'wb') as f:
+    pickle.dump(ALL_GRAPHS, f)
