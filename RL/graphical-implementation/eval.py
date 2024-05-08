@@ -65,7 +65,7 @@ plt.scatter(zetas_lst, prop, color='black', alpha=0.1)
 plt.xlabel('Zeta Value')
 plt.ylabel('Percentage of CCE Actions')
 
-plt.savefig('ppcce_percentage.png')
+# plt.savefig('part_cce_percentage.png')
 
 
 
@@ -84,12 +84,20 @@ data_exploded = data.apply(pd.Series.explode)
 mean_dists = data_exploded.groupby('Zeta').mean()
 std_devs = data_exploded.groupby('Zeta').std()
 
+# # ave distance of the last zeta value
+# print(mean_dists.iloc[-1])
+# # std dev of dists for the last zeta value
+# print(std_devs.iloc[-1])
+
+
 
 plt.figure(figsize=(10, 6))
 plt.errorbar(mean_dists.index, mean_dists['Distance'], yerr=std_devs['Distance'], fmt='o:', capsize=5, color='black', label='RLxCCE Agent')
 
-# add green horizonatal line at 34163.47381063614 with std 2305.177588945328 with label 'RL Agent'
-plt.axhline(y=34163.47381063614, color='green', linestyle='--', label='RL Agent')
+# add green horizonatal line at 31229.347695 with std 160.103771 with label 'RL Agent'
+plt.axhline(y=31229.347695, color='green', linestyle='--', label='RL Agent')
+# plt.axhline(y=31229.347695 + 160.103771, color='green', linestyle=':', label='RL Agent + STD', alpha=0.15)
+# plt.axhline(y=31229.347695 - 160.103771, color='green', linestyle=':', label='RL Agent - STD', alpha=0.15)
 
 plt.title('Average Distance vs CCE Certainty')
 plt.xlabel('Minimum observation-action visits (certainty) of CCE')
@@ -97,5 +105,34 @@ plt.ylabel('Distance to Goal State')
 plt.grid(True)
 plt.legend(loc='upper right', fontsize='small')
 
-plt.savefig('mppdistance_vs_cce.png')
+# plt.savefig('part_distance_vs_cce.png')
 
+
+
+# evaluation plot by percentage of cce actions instead of zeta values
+
+data = pd.DataFrame({
+    'CCE Percentage': prop,
+    'Distance': dists
+})
+
+data_exploded = data.apply(pd.Series.explode)
+mean_dists = data_exploded.groupby('CCE Percentage').mean()
+std_devs = data_exploded.groupby('CCE Percentage').std()
+
+plt.figure(figsize=(10, 6))
+plt.errorbar(mean_dists.index, mean_dists['Distance'], yerr=std_devs['Distance'], fmt='o:', capsize=5, color='black', label='RLxCCE Agent')
+
+# add green horizonatal line at 31229.347695 with std 160.103771 with label 'RL Agent'
+plt.axhline(y=31229.347695, color='green', linestyle='--', label='RL Agent')
+# plt.axhline(y=31229.347695 + 160.103771, color='green', linestyle=':', label='RL Agent + STD', alpha=0.15)
+# plt.axhline(y=31229.347695 - 160.103771, color='green', linestyle=':', label='RL Agent - STD', alpha=0.15)
+
+plt.title('Average Distance vs CCE Proportion')
+plt.xlabel('Percentage of CCE Actions')
+plt.ylabel('Distance to Goal State')
+plt.grid(True)
+
+plt.legend(loc='upper right', fontsize='small')
+
+plt.savefig('full_distance_vs_cce_percentage.png')
