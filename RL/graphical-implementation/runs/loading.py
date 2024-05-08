@@ -18,10 +18,10 @@ class loading():
             self.graphs = pickle.load(f)
 
     def load_all(self, path):
-        with open(os.path.join(path, 'mppTEST_dists.pkl'), 'rb') as f:
+        with open(os.path.join(path, 'all_TEST_dists.pkl'), 'rb') as f:
             self.distances = pickle.load(f)
 
-        with open(os.path.join(path, 'mppTEST_paths.pkl'), 'rb') as f:
+        with open(os.path.join(path, 'all_TEST_paths.pkl'), 'rb') as f:
             self.paths = pickle.load(f)
 
         with open(os.path.join(path, 'SARSA_q_tables.pkl'), 'rb') as f:
@@ -30,13 +30,13 @@ class loading():
         with open(os.path.join(path, 'SARSA_cce.pkl'), 'rb') as f:
             self.cces = pickle.load(f)
 
-        with open(os.path.join(path, 'mppTEST_cce_percentages.pkl'), 'rb') as f:
+        with open(os.path.join(path, 'all_TEST_cce_percentages.pkl'), 'rb') as f:
             self.cce_precents = pickle.load(f)
 
-        with open(os.path.join(path, 'mppTEST_zetavalues.pkl'), 'rb') as f:
+        with open(os.path.join(path, 'all_TEST_zetavalues.pkl'), 'rb') as f:
             self.zetas = pickle.load(f)
 
-        with open(os.path.join(path, 'mppTEST_all_zetas.pkl'), 'rb') as f:
+        with open(os.path.join(path, 'all_TEST_all_zetas.pkl'), 'rb') as f:
             self.list_zetas = pickle.load(f)
 
         with open(os.path.join(path, 'graphs.pkl'), 'rb') as f:

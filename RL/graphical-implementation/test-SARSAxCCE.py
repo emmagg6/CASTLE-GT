@@ -14,13 +14,13 @@ from matplotlib import cm
 from matplotlib.lines import Line2D
 from matplotlib.colors import to_rgba
 
-from scipy.spatial import Voronoi, voronoi_plot_2d
-from scipy.spatial import KDTree
+# from scipy.spatial import Voronoi, voronoi_plot_2d
+# from scipy.spatial import KDTree
 
-import sklearn
-from sklearn.preprocessing import MinMaxScaler
-from scipy.spatial.distance import cdist
-from scipy.spatial import KDTree
+# import sklearn
+# from sklearn.preprocessing import MinMaxScaler
+# from scipy.spatial.distance import cdist
+# from scipy.spatial import KDTree
 
 import os
 
@@ -335,7 +335,9 @@ def test(cce, q_table, state_actions_dist, graph, start_coordinates, goal_coordi
 
 TRIALS = 100
 
-zetas = np.arange(0, 100, 5)
+zetas_small = np.arange(500, 10000, 1000)
+zetas_large = np.arange(10000, 310000, 10000)
+zetas = np.concatenate((zetas_small, zetas_large))
 print(zetas)
 
 num_inner_sites = 7
@@ -387,18 +389,18 @@ import pickle
 os.makedirs(folder, exist_ok=True)
 
 
-with open(os.path.join(folder, 'mppTEST_dists.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_dists.pkl'), 'wb') as f:
     pickle.dump(ALL_DISTS, f)
 
-with open(os.path.join(folder, 'mppTEST_paths.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_paths.pkl'), 'wb') as f:
     pickle.dump(ALL_PATHS, f)
 
 
-with open(os.path.join(folder, 'mppTEST_cce_percentages.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_cce_percentages.pkl'), 'wb') as f:
     pickle.dump(ALL_CCE_PRECENTAGES, f)
 
-with open(os.path.join(folder, 'mppTEST_zetavalues.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_zetavalues.pkl'), 'wb') as f:
     pickle.dump(zetas, f)
 
-with open(os.path.join(folder, 'mppTEST_all_zetas.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_all_zetas.pkl'), 'wb') as f:
     pickle.dump(ALL_ZETAS, f)

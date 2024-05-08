@@ -19,7 +19,7 @@ def plot_graph(losses_list, names_list):
     plt.title('Cumulative Loss Over Time Steps')
     plt.legend()
     plt.grid(True)
-    plt.savefig('cumulative_loss.png')
+    # plt.savefig('cumulative_loss.png')
     plt.show()
 
 
