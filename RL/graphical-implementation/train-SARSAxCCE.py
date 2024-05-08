@@ -472,14 +472,12 @@ def action_selection(graph, state_actions_dist, q_table, state, previous_state, 
     return action, index
 
 
-def train(graph, goal_coord, method, q_table, state_actions_dist, episodes=5000, alpha=0.1, gamma=0.9, initial_epsilon=0.1, min_epsilon=0.01, max_distance=500, initial_q=1):
+def train(graph, goal_coord, q_table, state_actions_dist, episodes=5000, alpha=0.1, gamma=0.9, initial_epsilon=0.1, min_epsilon=0.01, max_distance=500, initial_q=1):
     """
     Train the agent using SARSA with e-greedy action selection.
     Update Agent-Agnostic EXP3-IX algorithm during training
     """
     Q = q_table.copy()
-    Qs = []
-
     cce = {}
 
     # Initialize new states and actions in the Q-table
@@ -539,10 +537,7 @@ def train(graph, goal_coord, method, q_table, state_actions_dist, episodes=5000,
         # Decaying epsilon with episodes
         epsilon = max(min_epsilon, epsilon / np.sqrt((episode + 1)))
 
-        if (episode + 1) % (episodes / 5) == 0:
-            Qs.append(Q)
-
-    return Qs, cce
+    return Q, cce
 
 def initialize_or_update_cce(cce, state, action):
     # s = tuple(state)
@@ -626,6 +621,7 @@ def test(cce, q_table, state_actions_dist, graph, start_coordinates, goal_coordi
             valid_actions = actions_five
         else:
             valid_actions = actions_six
+            print('HEX')
 
         # Check for valid actions
         if not valid_actions:
@@ -718,7 +714,6 @@ for trial in range(TRIALS) :
 
     q_table, cce = train(graph = graph,
                                 goal_coord = East_coord,
-                                method = 'egreedy',
                                 q_table = init_q_table,
                                 state_actions_dist = state_actions_dist,
                                 initial_epsilon = 0.25,
