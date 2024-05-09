@@ -65,7 +65,7 @@ plt.scatter(zetas_lst, prop, color='black', alpha=0.1)
 plt.xlabel('Zeta Value')
 plt.ylabel('Percentage of CCE Actions')
 
-# plt.savefig('part_cce_percentage.png')
+plt.savefig('full_cce_percentage.png')
 
 
 
@@ -92,7 +92,9 @@ std_devs = data_exploded.groupby('Zeta').std()
 
 
 plt.figure(figsize=(10, 6))
-plt.errorbar(mean_dists.index, mean_dists['Distance'], yerr=std_devs['Distance'], fmt='o:', capsize=5, color='black', label='RLxCCE Agent')
+plt.errorbar(mean_dists.index, mean_dists['Distance'], yerr=std_devs['Distance'], 
+             fmt='o:', capsize=1, color='black', label='RLxCCE Agent',
+             elinewidth=1, capthick=1)
 
 # add green horizonatal line at 31229.347695 with std 160.103771 with label 'RL Agent'
 plt.axhline(y=31229.347695, color='green', linestyle='--', label='RL Agent')
@@ -102,10 +104,11 @@ plt.axhline(y=31229.347695, color='green', linestyle='--', label='RL Agent')
 plt.title('Average Distance vs CCE Certainty')
 plt.xlabel('Minimum observation-action visits (certainty) of CCE')
 plt.ylabel('Distance to Goal State')
+plt.xlim(12000, 305000)
 plt.grid(True)
 plt.legend(loc='upper right', fontsize='small')
 
-# plt.savefig('part_distance_vs_cce.png')
+plt.savefig('clipped_full_distance_vs_cce.png')
 
 
 
