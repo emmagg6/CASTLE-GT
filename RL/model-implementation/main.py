@@ -151,8 +151,8 @@ def EQasObserver(total_iteration=10000):
     print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
     return losses,regret
     
-lossEQAgent,regretEQAgent = EQasAgent(total_iteration=1000000)
-lossEQobserver,regretEQobserver = EQasObserver(total_iteration=1000000)
+lossEQAgent,regretEQAgent = EQasAgent(total_iteration=100)
+lossEQobserver,regretEQobserver = EQasObserver(total_iteration=100)
 
 names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 
