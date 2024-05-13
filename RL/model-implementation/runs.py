@@ -13,7 +13,7 @@ from utility import plot_regret
 import numpy as np
 
 
-def EQasAgent(total_iteration=10000):
+def EQasAgent(total_iteration=10000, trials = 0):
     print("\nEQ as Agent")
     """
         blueAgent (EQ approximator) will be the one interacting with the environment
@@ -35,11 +35,12 @@ def EQasAgent(total_iteration=10000):
     redAgent = RedAgent()
 
     # for plotting and loggin purposes
-    losses = []
+    training_losses = []
     log=[]
     loss_over_all_actions = {action: 0 for action in blueAgentActions}
     regret = []
 
+    ################# TRAINING #################
     for _ in range(total_iteration): 
         state = env.current_state 
         blueActionIndex = blueAgent.get_action(state)
@@ -51,24 +52,44 @@ def EQasAgent(total_iteration=10000):
         nextstate,loss = env.step(blueAction,RedAction) 
         blueAgent.update_policy(state, blueActionIndex,loss)
 
-        losses.append(loss)
+        training_losses.append(loss)
         log.append([blueAgentActions[blueActionIndex],state,loss])
 
         for action in blueAgentActions:
             loss_over_all_actions[action] += env.get_loss(action)
         
         best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+        regret.append(sum(training_losses)-loss_over_all_actions[best_current_action])
 
     # Output the policy and visit counts
-    print(f"Policy for state '{state}':", blueAgent.eq_approx[state])
-    print(f"Visit counts for state '{state}':", blueAgent.visit_count[state])
+    # print(f"Policy for state '{state}':", blueAgent.eq_approx[state])
+    # print(f"Visit counts for state '{state}':", blueAgent.visit_count[state])
 
     # print("log",log)
     # plot_graph(losses,name="EQasAgent")
-    return losses,regret
 
-def EQasObserver(total_iteration=10000):
+    ################# TESTING #################
+    testing_losses = []
+    for trial in range(trials):
+        testing_losses.append([])
+        for step in range(20):
+            losses = 0
+
+            state = env.current_state 
+            blueActionIndex = blueAgent.get_action(state)
+            # RedActionIndex = redAsgent.get_action(redAgentActions)
+
+            blueAction = blueAgentActions[blueActionIndex]
+            RedAction = redAgent.get_action(redAgentActions)
+
+            nextstate, loss = env.step(blueAction,RedAction)
+
+            losses += loss
+        testing_losses[trial].append(losses)
+
+    return training_losses, regret, testing_losses
+
+def EQasObserver(total_iteration=10000, trials = 0):
     print("\nEQ as Observer")
     """
         blueAgent (Q learning agent) will be the one interacting with the environment
@@ -104,6 +125,8 @@ def EQasObserver(total_iteration=10000):
     loss_over_all_actions = {action: 0 for action in blueAgentActions}
     regret = []
 
+
+    ################# TRAINING #################
     for iteration in range(total_iteration): 
         state = env.current_state                                                       # get the current state from teh environment
         BlueActionIndex = blueAgent.choose_action(state)                                # let the Q learning agent choose an action
@@ -151,39 +174,67 @@ def EQasObserver(total_iteration=10000):
     # print(f"Q-learner: Policy Q-table':\n", blueAgent.q_table)
     # print(f"CCE: Policy for state '{state}':", EQobserver.eq_approx_unknown[str(state)])
     # print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
-    return losses,regret
 
+    ################# TESTING #################
+    testing_losses_Q = []
+    testing_losses_CCE = []
 
-losses_EQAgent = []
-losses_EQObserver = []
+    env_Q = Environment()
+    env_CCE = Environment()
+    for trial in range(trials):
+        testing_losses_Q.append([])
+        testing_losses_CCE.append([])
+        for step in range(20):
+            losses_Q = 0
+            losses_CCE = 0
+
+            state_Q = env_Q.current_state 
+            state_CCE = env_CCE.current_state
+            BlueActionIndex = blueAgent.choose_action(state_Q)
+            # RedActionIndex = redAsgent.get_action(redAgentActions)
+
+            BlueAction_Q = blueAgentActions[BlueActionIndex]
+            print(f"Q Action: {BlueAction_Q}")
+            BlueAction_CCE = EQobserver.get_action_adaptation(state_CCE)
+            print(f"CCE Action: {BlueAction_CCE}")
+            RedAction = redAgent.get_action(redAgentAction)
+
+            nextstate, loss_Q = env_Q.step(BlueAction_Q, RedAction)
+            nextstate, loss_CCE = env_CCE.step(BlueAction_CCE, RedAction)
+            print(f"Loss Q: {loss_Q}, Loss CCE: {loss_CCE}")
+
+            losses_Q += loss_Q
+            losses_CCE += loss_CCE
+        testing_losses_Q[trial].append(losses_Q)
+        testing_losses_CCE[trial].append(losses_CCE)
+    
+
+    return losses, regret, testing_losses_Q, testing_losses_CCE
+
 
 TRIALS = 100
 
-for trial in range(TRIALS):
-    print(f"\n\nTrial {trial+1}")
-    lossEQAgent, regretEQAgent = EQasAgent(total_iteration=100)
-    lossEQobserver, regretEQobserver = EQasObserver(total_iteration=100)
-
-    # print(f"lossEQAgent: {lossEQAgent}")
-
-    losses_EQAgent.append(sum(lossEQAgent))
-    losses_EQObserver.append(sum(lossEQobserver))
+lossEQAgent, regretEQAgent, test_lossesEQAgent = EQasAgent(total_iteration=100, trials = TRIALS)
+lossEQobserver, regretEQobserver, test_lossesEQobserver_Q, test_lossesEQobserver_CCE = EQasObserver(total_iteration=100, trials = TRIALS)
 
 
 names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 
 # average the losses over the trials, per agent (EQAgent, EQObserver)
 
-average_losses_EQAgent = np.mean(losses_EQAgent, axis=0)
-average_losses_EQObserver = np.mean(losses_EQObserver, axis=0)
+average_losses_EQAgent = np.mean(test_lossesEQAgent, axis=0)
+average_losses_EQObserver_Q = np.mean(test_lossesEQobserver_Q, axis=0)
+average_losses_EQObserver_CCE = np.mean(test_lossesEQobserver_CCE, axis=0)
 
 # standard deviation of the losses over the trials, per agent (EQAgent, EQObserver)
 
-std_losses_EQAgent = np.std(losses_EQAgent, axis=0)
-std_losses_EQObserver = np.std(losses_EQObserver, axis=0)
+std_losses_EQAgent = np.std(test_lossesEQAgent, axis=0)
+std_losses_EQObserver_Q = np.std(test_lossesEQobserver_Q, axis=0)
+std_losses_EQObserver_CCE = np.std(test_lossesEQobserver_CCE, axis=0)
 
 # print out mean and standard deviation of the losses over the trials, per agent (EQAgent, EQObserver)
 
-print(f"\n\nAverage losses EQAgent: {average_losses_EQAgent},  Standard Deviation: {std_losses_EQAgent}")
-print(f"\n\nAverage losses EQObserver: {average_losses_EQObserver},  Standard Deviation: {std_losses_EQObserver}")
+print(f"\n\nAverage losses EXP3-IX: {average_losses_EQAgent},  Standard Deviation: {std_losses_EQAgent}")
+print(f"\n\nAverage losses Q-learner: {average_losses_EQObserver_Q},  Standard Deviation: {std_losses_EQObserver_Q}")
+print(f"\n\nAverage losses Agent Agnostic EXP3-IX: {average_losses_EQObserver_CCE},  Standard Deviation: {std_losses_EQObserver_CCE}")
 

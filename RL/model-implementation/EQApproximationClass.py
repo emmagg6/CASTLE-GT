@@ -35,6 +35,24 @@ class EqApproximation:
         action = np.random.choice(self.num_actions, p=currentPolicy)                    # choose an action using the policy 
         self.visit_count[state][action] += 1                                                    # increment the visit count for the chosen action
         return action
+    
+    def get_action_adaptation(self, state, zeta = 1):
+        """
+            extension for larger environments
+        """
+        state = str(state)
+        # check is state is in the eq_approx_unknown dictionary
+        if state not in self.eq_approx_unknown:
+            return None
+        # get the action with the highest value, with visit counts at least as many as zeta value
+        valid_action = []
+        for action in self.eq_approx_unknown[state]:
+            if self.visit_count_unknown[state][action] >= zeta:
+                valid_action.append(action)
+        # get the action with the highest value out for all of the actions in the valid_action list
+        action = max(valid_action, key=lambda x: self.eq_approx_unknown[state][x])
+        # print(f"CCE Action: {action}")
+        return action
 
     def update_policy(self, state, chosen_action,loss):
         """
