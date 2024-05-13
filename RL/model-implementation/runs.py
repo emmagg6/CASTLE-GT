@@ -61,12 +61,6 @@ def EQasAgent(total_iteration=10000, trials = 0):
         best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
         regret.append(sum(training_losses)-loss_over_all_actions[best_current_action])
 
-    # Output the policy and visit counts
-    # print(f"Policy for state '{state}':", blueAgent.eq_approx[state])
-    # print(f"Visit counts for state '{state}':", blueAgent.visit_count[state])
-
-    # print("log",log)
-    # plot_graph(losses,name="EQasAgent")
 
     ################# TESTING #################
     testing_losses = []
@@ -149,31 +143,6 @@ def EQasObserver(total_iteration=10000, trials = 0):
         best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
         regret.append(sum(losses)-loss_over_all_actions[best_current_action])
 
-        # Print the sum of policy snapshot every fixed iterations
-        # if (iteration + 1) % int(checkpoint_frequency) == 0:
-        #     # print(f"Iteration {iteration + 1}: Sum of Policy Snapshot:")
-        #     checkpoints.append(iteration + 1)  # Record the checkpoint iteration
-        #     for state, policy_sum in EQobserver.sumOfPolicy.items(): 
-        #         if state not in policy_sums_over_time:
-        #             policy_sums_over_time[state] = []  # Initialize it if not present
-        #        # Iterate through each state's policy sums
-        #         print(f"policy_sum: {policy_sum}",state)
-        #         scaled_sum_of_policy = policy_sum[state] / (iteration + 1)  
-        #         policy_sums_over_time[state].append(scaled_sum_of_policy) 
-
-        
-    # print("log: action, state, loss",log)
-    # best_state,best_action,max_value =find_most_favored_action(EQobserver.sumOfPolicy)
-    # print(EQobserver.sumOfPolicy)
-    # print(f"state {best_state} and action {blueAgentActions[best_action]} has the highset sum of policy value with {max_value}")
-    # print("action count" ,action_count)
-    # plot_graph(losses,name="EQasObserver")
-    # plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAgentActions)   
-
-    # # Output the policy and visit counts
-    # print(f"Q-learner: Policy Q-table':\n", blueAgent.q_table)
-    # print(f"CCE: Policy for state '{state}':", EQobserver.eq_approx_unknown[str(state)])
-    # print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
 
     ################# TESTING #################
     testing_losses_Q = []
