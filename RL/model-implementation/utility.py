@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 
-def plot_graph(losses_list, names_list):
+def plot_graph(losses_list, names_list, graph_title):
     """
     Plot the cumulative loss over time steps for multiple datasets.
     """
@@ -15,12 +15,11 @@ def plot_graph(losses_list, names_list):
         plt.plot(time_steps, cumulative_losses, label=name)
 
     plt.xlabel('Time Steps')
-    plt.ylabel('Cumulative Loss')
-    plt.title('Cumulative Loss Over Time Steps')
+    plt.ylabel(f'Cumulative {graph_title}')
+    plt.title(f'Cumulative {graph_title} Over Time Steps')
     plt.legend()
     plt.grid(True)
-    plt.savefig('cumulative_loss.png')
-    plt.show()
+    plt.savefig(f'cumulative_{graph_title}.png')
 
 
 def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAgentActions):
@@ -50,7 +49,7 @@ def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAge
     plt.xlabel('Iteration')
     plt.ylabel('Scaled Sum of Policy')
     plt.legend()
-    plt.show()   
+    plt.save('scaled_sum_policy_over_time.png')
 
 
 
@@ -72,3 +71,14 @@ def find_most_favored_action(sumOfPolicy):
             favored_action = max_action_index
 
     return favored_state, favored_action, max_value
+
+def plot_regret(regret):
+    plt.figure(figsize=(10, 5))
+    plt.plot(regret, label='Cumulative Regret')
+    plt.xlabel('Time Step')
+    plt.ylabel('Cumulative Regret')
+    plt.title('Cumulative Regret Over Time')
+    plt.legend()
+    plt.grid(True)
+
+    plt.show()

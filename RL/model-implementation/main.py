@@ -8,6 +8,7 @@ from RedAgentBandit import RedAgent
 from utility import plot_graph
 from utility import plot_scaled_sum_policy_over_time
 from utility import find_most_favored_action
+from utility import plot_regret
 
 
 def EQasAgent(total_iteration=10000):
@@ -23,8 +24,8 @@ def EQasAgent(total_iteration=10000):
     # blueAgentActions = ["Remove","Restore","Sleep"]                                         # for simplicity, the blue agent can only choose between two actions
     # redAgentAction = ["noOp","Attack"]
     
-    blueAgentActions = ["Action 2", "Action 3", "Action 4"]                                                              # actions for the blue agent in Bandit environment
-    redAgentActions = ["Action 0", "Action 1"]
+    blueAgentActions = ["Action 2", "Action 3", "Action 4"]                              # Action 2: remove, Action 3: restore, Action 4: sleep
+    redAgentActions = ["Action 0", "Action 1"]                                            # Action 0: noOp; Action 1: Attack
 
     blueAgent =EqApproximation(states, num_actions=3, T=total_iteration)                   # gamma and eta set to 0.01 and 0.1 for simplicity
 
@@ -34,6 +35,8 @@ def EQasAgent(total_iteration=10000):
     # for plotting and loggin purposes
     losses = []
     log=[]
+    loss_over_all_actions = {action: 0 for action in blueAgentActions}
+    regret = []
 
     for _ in range(total_iteration): 
         state = env.current_state 
@@ -49,13 +52,19 @@ def EQasAgent(total_iteration=10000):
         losses.append(loss)
         log.append([blueAgentActions[blueActionIndex],state,loss])
 
+        for action in blueAgentActions:
+            loss_over_all_actions[action] += env.get_loss(action)
+        
+        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
+        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+
     # Output the policy and visit counts
     print(f"Policy for state '{state}':", blueAgent.eq_approx[state])
     print(f"Visit counts for state '{state}':", blueAgent.visit_count[state])
 
     # print("log",log)
     # plot_graph(losses,name="EQasAgent")
-    return losses
+    return losses,regret
 
 def EQasObserver(total_iteration=10000):
     print("\nEQ as Observer")
@@ -84,22 +93,21 @@ def EQasObserver(total_iteration=10000):
     # for plotting and logging purposes
     losses = []
     log=[]
-    policy_sums_over_time = {state: [] for state in EQobserver.sumOfPolicy.keys()}  # Prepare dictionary to store the data over time
+    policy_sums_over_time = {}  # Prepare dictionary to store the data over time
     checkpoints = []
     checkpoint_frequency = total_iteration * 0.05
     # action_count = {"Remove":0,"Restore":0,"Sleep":0}
-    action_count = {"Action 4":0,"Action 2":0,"Action 3":0}
+    action_count = {"Action 2":0,"Action 3":0,"Action 4":0}
+
+    loss_over_all_actions = {action: 0 for action in blueAgentActions}
+    regret = []
 
     for iteration in range(total_iteration): 
         state = env.current_state                                                       # get the current state from teh environment
         BlueActionIndex = blueAgent.choose_action(state)                                # let the Q learning agent choose an action
         BlueAction = blueAgentActions[BlueActionIndex]
 
-        # RedActionIndex = redAgent.get_action()
-        # RedAction = redAgentAction[RedActionIndex]
-
         RedAction = redAgent.get_action(redAgentAction)                                  # let the red agent choose an action (for now, the red agent is not learning)
-
         next_state, loss = env.step(BlueAction,RedAction)                                    # get the loss for the chosen action
         blueAgent.update_q_table(state, BlueActionIndex,loss,next_state)                     # update the policy for the Q learning agent
 
@@ -110,12 +118,21 @@ def EQasObserver(total_iteration=10000):
         log.append([blueAgentActions[BlueActionIndex],state,loss])
         action_count[blueAgentActions[BlueActionIndex]] += 1
 
-        # # Print the sum of policy snapshot every fixed iterations
+        for action in blueAgentActions:
+            loss_over_all_actions[action] += env.get_loss(action)
+        
+        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
+        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+
+        # Print the sum of policy snapshot every fixed iterations
         # if (iteration + 1) % int(checkpoint_frequency) == 0:
         #     # print(f"Iteration {iteration + 1}: Sum of Policy Snapshot:")
         #     checkpoints.append(iteration + 1)  # Record the checkpoint iteration
-        #     for state, policy_sum in EQobserver.sumOfPolicy.items():
-        #         print(f"policy_sum: {policy_sum}")
+        #     for state, policy_sum in EQobserver.sumOfPolicy.items(): 
+        #         if state not in policy_sums_over_time:
+        #             policy_sums_over_time[state] = []  # Initialize it if not present
+        #        # Iterate through each state's policy sums
+        #         print(f"policy_sum: {policy_sum}",state)
         #         scaled_sum_of_policy = policy_sum[state] / (iteration + 1)  
         #         policy_sums_over_time[state].append(scaled_sum_of_policy) 
 
@@ -132,12 +149,15 @@ def EQasObserver(total_iteration=10000):
     print(f"Q-learner: Policy Q-table':\n", blueAgent.q_table)
     print(f"CCE: Policy for state '{state}':", EQobserver.eq_approx_unknown[str(state)])
     print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
-    return losses
+    return losses,regret
     
-lossEQAgent = EQasAgent(total_iteration=10000)
-lossEQobserver = EQasObserver(total_iteration=10000)
+lossEQAgent,regretEQAgent = EQasAgent(total_iteration=1000000)
+lossEQobserver,regretEQobserver = EQasObserver(total_iteration=1000000)
 
+names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 
 losses_list = [lossEQAgent, lossEQobserver]
-names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
-plot_graph(losses_list, names_list)
+regret_list = [regretEQAgent, regretEQobserver]
+
+plot_graph(losses_list, names_list,"Loss")
+plot_graph(regret_list, names_list,"Regret")

@@ -93,7 +93,7 @@ class EqApproximation:
         total_sum = np.sum(list(self.eq_approx_unknown[state].values()))
         currentPolicy = {act: val / total_sum for act, val in self.eq_approx_unknown[state].items()}
                                                            # sum of the policy for all actions
-
+        
         ##### update hyperparameters #####
         self.gamma_adapting = np.sqrt((2 * np.log(len(currentPolicy)))/(len(currentPolicy) + self.total_time))
         self.eta_adapting = self.gamma * 2

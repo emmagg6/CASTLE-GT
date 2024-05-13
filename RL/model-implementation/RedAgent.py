@@ -9,8 +9,8 @@ class RedAgent:
     def get_action(self):
         self.current_tick += 1
         if self.current_tick % self.interval == 0:
-            return 1
-        return 0
+            return "Action 1"                           # attack
+        return "Action 0"                               # noOp
     
 
     

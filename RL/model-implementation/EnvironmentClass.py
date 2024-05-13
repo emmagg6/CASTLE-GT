@@ -33,7 +33,7 @@ class Environment:
         """
         demo function: take the action of the blue agent and the red agent and return the next state and the loss
         """
-        if blueAction == "Remove":
+        if blueAction == "Remove":                              
             self.current_state -= 4
         if blueAction == "Sleep" or blueAction == "Restore":
             self.current_state += 1
@@ -47,4 +47,22 @@ class Environment:
             self.current_state = 0
             
         return self.current_state, self.losses[self.current_state]
+ 
+    def get_loss(self, blueAction):
+        """
+        get the loss for the respective state; used for calculating the regret
+        """
+        state = self.current_state
+        if blueAction == "Remove":
+            state -= 4
+        if blueAction == "Sleep" or blueAction == "Restore":
+            state += 1
+
+        if state > len(self.states)-1:             # if more than 10 contaminated -> stay at state 10
+            state = len(self.states)-1
+
+        if state < 0:                              # if less than 0 contaminated -> stay at state 0
+            state = 0
+            
+        return self.losses[state]
  
