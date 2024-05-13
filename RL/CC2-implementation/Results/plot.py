@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Directory containing the files
-directory = "/scratch/egraham/CASTLE-GT/RL/implementation/Evaluation/plotting"
+directory = "/scratch/egraham/CASTLE-GT/RL/CC2-implementation/Evaluation/plotting"
 
 if not os.path.exists(directory):
     print(f"Directory does not exist: {directory}")
@@ -45,7 +45,7 @@ else:
 
     # Plotting RLxCCE Agent
     plt.figure(figsize=(10, 6))
-    plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='black', label='RLxCCE Agent')
+    plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='black', label='Agent-Agnostic EXP3-IX')
 
     # Mean Lines for purely PPO RL Agent (Red) and Extended (fully) Training RL Agent (Dark Green)
     rl_mean = -106.1025
@@ -59,5 +59,5 @@ else:
     plt.grid(True)
     plt.legend(loc='lower right', fontsize='small')
 
-    plt.savefig('/scratch/egraham/CASTLE-GT/RL/implementation/Results/plot-partial.png')
-    print("Plot saved to CASTLE-GT/RL/implementation/Results/")
+    plt.savefig('/scratch/egraham/CASTLE-GT/RL/CC2-implementation/Results/plot-partial-2.png')
+    print("Plot saved to CASTLE-GT/RL/CC2-implementation/Results/")
