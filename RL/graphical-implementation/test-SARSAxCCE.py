@@ -14,13 +14,13 @@ from matplotlib import cm
 from matplotlib.lines import Line2D
 from matplotlib.colors import to_rgba
 
-from scipy.spatial import Voronoi, voronoi_plot_2d
-from scipy.spatial import KDTree
+# from scipy.spatial import Voronoi, voronoi_plot_2d
+# from scipy.spatial import KDTree
 
-import sklearn
-from sklearn.preprocessing import MinMaxScaler
-from scipy.spatial.distance import cdist
-from scipy.spatial import KDTree
+# import sklearn
+# from sklearn.preprocessing import MinMaxScaler
+# from scipy.spatial.distance import cdist
+# from scipy.spatial import KDTree
 
 import os
 
@@ -31,113 +31,7 @@ load = loading()
 load.load_train(path = folder)
 
 
-
-class Voronoi_Diagram :
-  '''
-  Voronoi Diagram Generation
-
-Generates
-> Points on outer circle: $ N \in \mathbb{R}^2 $
-
-> Points about *inner* Gaussian: $ M \in \mathbb{R}^2 $
-
-> Voronoi diagram from both sets
-
-> Visual of diagram
-  
-  '''
-  def __init__(self, N_amnt = 12, N_radius = 1, N_center = (0,0), M_amnt = 6, M_center = 0) :
-    self.N_pts = N_amnt
-    self.M_pts = M_amnt
-    self.N_rad = N_radius
-    self.N_mid = N_center
-    self.M_mid = M_center
-
-
-  def generate_points_on_circle(self):
-      inner_rad = self.N_rad - self.N_rad/4
-
-      angles = np.arange(self.N_pts) * 2*np.pi/self.N_pts + np.pi/self.N_pts
-
-      # polar coordinates -> Cartesian coordinates
-      x_out = self.N_mid[0] + self.N_rad * np.cos(angles)
-      y_out = self.N_mid[1] + self.N_rad * np.sin(angles)
-      x_in = self.N_mid[0] + inner_rad * np.cos(angles)
-      y_in = self.N_mid[1] + inner_rad * np.sin(angles)
-
-      x = np.concatenate((x_out, x_in), axis=0)
-      y = np.concatenate((y_out, y_in), axis=0)
-      N = np.column_stack((x, y))
-
-      return N
-
-  def generate_points_in_circle(self, M_seed):
-      rng = np.random.default_rng(M_seed)
-
-      x, y = rng.normal(loc=self.M_mid, scale=self.N_rad/4, size=(2, self.M_pts))
-
-      M = np.column_stack((x, y))
-      
-      return M
-
-  def voronoi_mass_set(self, N, M) :
-    masses = np.concatenate((N[:,:], M[:,:]))
-    return masses
-
-  def voronoi_diag(self, N, M) :
-    PTS = self.voronoi_mass_set(N, M)
-    vor = Voronoi(PTS)
-    return vor, PTS
-
-  def visualize_voronoi(self, VOR, N, M) :
-    fig, ax = plt.subplots(figsize = (8, 8))
-    voronoi_plot_2d(VOR, ax=ax, show_vertices=False)
-
-    # sites
-    ax.plot(N[:, 0], N[:, 1], 'b.', markersize=10)
-    ax.plot(M[:, 0], M[:, 1], 'g.', markersize=5)
-
-    # the circles
-    N_circle = Circle(self.N_mid, radius=self.N_rad, linestyle='--',
-                      edgecolor='b', linewidth = 0.5, facecolor='none')
-    N_circle_inner = Circle(self.N_mid, radius=self.N_rad-0.1, linestyle='--',
-                      edgecolor='b', linewidth = 0.5, facecolor='none')
-    M_circle = Circle(self.N_mid, radius=(self.N_rad/4), linestyle='--',
-                      edgecolor='g', linewidth = 0.5, facecolor='none')
-    ax.add_patch(N_circle)
-    ax.add_patch(N_circle_inner)
-    ax.add_patch(M_circle)
-
-    ax.set_xlim([-self.N_rad -1, self.N_rad +1])
-    ax.set_ylim([-self.N_rad -1, self.N_rad +1])
-
-    plt.show()
-
-
-
-################################### TASK SIMILARITY ###################################
-
-    '''
-To interpret $\alpha=0$ and $\alpha=1$ as independent samples...
-
-Here's a possibility: sample two random sets of points $x_0$ and $x_1$ from a 2D normal.  
-Interpolate between them as
-
-    x_\alpha = \cos(\frac{\pi}{2} \alpha) \times x_0 + \sin(\frac{\pi}{2} \alpha) \times x_1
-
-for $\alpha\in[0,0.5]$. 
-
-    '''
-
-def combining_tasks(x0, x1, alps) :
-  Z = np.zeros((len(alps), len(x0), 2))
-  for i, a in enumerate(alps) :
-    Z[i] = (np.cos((np.pi / 2) * a) * x0) + (np.sin((np.pi / 2) * a) * x1)
-  return Z
-
-
 ############################## SIMILAR LABELING OF VERTICES ##############################
-
 
 def label_voronoi_sites(original_sites, voronoi, sites):
     # KDTree from the original sites
@@ -172,24 +66,22 @@ def label_voronoi_sites(original_sites, voronoi, sites):
 
 ############################ EXTREME POINTS OF VORONOI DIAGRAM ############################
 
-def find_extreme_vertices(vor_diagram):
-    vertices = vor_diagram.vertices
+def find_extreme_vertices(graph):
+    nodes = np.array([graph.nodes[node]['pos'] for node in graph.nodes()])
 
-    North_index = np.argmax(vertices[:, 1])
-    South_index = np.argmin(vertices[:, 1])
-    East_index = np.argmax(vertices[:, 0])
-    West_index = np.argmin(vertices[:, 0])
+    ordered_nodes_xaxis = nodes[nodes[:, 0].argsort()]
 
-    North_coord = vertices[North_index]
-    South_coord = vertices[South_index]
-    East_coord = vertices[East_index]
-    West_coord = vertices[West_index]
+    East_index = np.argmax(ordered_nodes_xaxis[:, 0])
+    East_coord = ordered_nodes_xaxis[East_index]
 
-    return North_index, North_coord, South_index, South_coord, East_index, East_coord, West_index, West_coord
+    West_index = np.argmin(ordered_nodes_xaxis[:, 0])
+    West_coord = ordered_nodes_xaxis[West_index]
+
+    return East_index, East_coord, West_index, West_coord
 
 
 
-############################ VORONOI TO GRAPH ############################
+############################ VORONOI EXTREMES AND TO GRAPH ############################
 
 def voronoi_to_graph(vor, labels):
     G = nx.Graph()  # NetworkX graph
@@ -404,6 +296,13 @@ def test(cce, q_table, state_actions_dist, graph, start_coordinates, goal_coordi
                 action = max(eq_approx_dict, key=eq_approx_dict.get)
                 action_idx = valid_actions.index(action)
                 num_cce_actions += 1
+            else:
+                # Q-values for each valid action
+                q_values = [q_table.get((state, action), -1) for action in valid_actions]
+                action_probs = softmax(q_values, temperature)
+                action = np.random.choice(valid_actions, p=action_probs)
+                action_idx = valid_actions.index(action)
+                num_sarsa_actions += 1
         else :
             # Q-values for each valid action
             q_values = [q_table.get((state, action), -1) for action in valid_actions]
@@ -434,9 +333,14 @@ def test(cce, q_table, state_actions_dist, graph, start_coordinates, goal_coordi
 
 ############ INITIALIZING ############
 
-TRIALS = 3
+TRIALS = 100
 
-zetas = np.arange(1000, 5000, 1000)
+# zetas_small = np.arange(200000, 220000, 10000)
+# zetas_mid = np.arange(220000, 250000, 1000)
+# zetas_large = np.arange(250000, 310000, 10000)
+# zetas = np.concatenate((zetas_small, zetas_mid, zetas_large))
+zetas = np.arange(0, 350000, 10000)
+print(zetas)
 
 num_inner_sites = 7
 temp = 0.01
@@ -454,6 +358,7 @@ graphs = load.graphs
 
 ### Trials ###
 for trial in range(TRIALS) :
+    print(f'Trial {trial}')
     ALL_PATHS.append([])
     ALL_DISTS.append([])
     ALL_CCE_PRECENTAGES.append([])
@@ -463,7 +368,7 @@ for trial in range(TRIALS) :
     q_table = Q_tables[trial]
     graph = graphs[trial]
 
-    North_index, North_coord, South_index, South_coord, East_index, East_coord, West_index, West_coord = find_extreme_vertices(voronoi_diagram)
+    East_index, East_coord, West_index, West_coord = find_extreme_vertices(graph)
     state_actions_dist = neighbors(graph)
 
 
@@ -486,18 +391,18 @@ import pickle
 os.makedirs(folder, exist_ok=True)
 
 
-with open(os.path.join(folder, 'SARSA_dists.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_dists.pkl'), 'wb') as f:
     pickle.dump(ALL_DISTS, f)
 
-with open(os.path.join(folder, 'SARSA_paths.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_paths.pkl'), 'wb') as f:
     pickle.dump(ALL_PATHS, f)
 
 
-with open(os.path.join(folder, 'SARSA_cce_percentages.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_cce_percentages.pkl'), 'wb') as f:
     pickle.dump(ALL_CCE_PRECENTAGES, f)
 
-with open(os.path.join(folder, 'zetavalues.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_zetavalues.pkl'), 'wb') as f:
     pickle.dump(zetas, f)
 
-with open(os.path.join(folder, 'all_zetas.pkl'), 'wb') as f:
+with open(os.path.join(folder, 'full_TEST_all_zetas.pkl'), 'wb') as f:
     pickle.dump(ALL_ZETAS, f)
