@@ -72,13 +72,30 @@ def find_most_favored_action(sumOfPolicy):
 
     return favored_state, favored_action, max_value
 
-def plot_regret(regret):
-    plt.figure(figsize=(10, 5))
-    plt.plot(regret, label='Cumulative Regret')
-    plt.xlabel('Time Step')
-    plt.ylabel('Cumulative Regret')
-    plt.title('Cumulative Regret Over Time')
-    plt.legend()
-    plt.grid(True)
+def plot_regret(names_list, regret_per_state_list, regret_per_state_iteration_list):
+    """
+    Plots cumulative regret per state for multiple agents.
 
-    plt.show()
+    :param names_list: List of names for each agent.
+    :param regret_per_state_list: List of dictionaries with cumulative regrets per state for each agent.
+    :param regret_per_state_iteration_list: List of dictionaries with iteration counts for regrets per state for each agent.
+    """
+    plt.figure(figsize=(15, 10))  # Set a larger figure size for better readability
+    line_styles = {
+        "EXP3-IX": 'solid',  # Example: Solid line for EXP3-IX
+        "Agent-Agnostic EXP3-IX": 'dashed'  # Example: Dashed line for Agent-Agnostic EXP3-IX
+    }
+    # Loop through each agent's data
+    for name, regrets_per_state, iterations_per_state in zip(names_list, regret_per_state_list, regret_per_state_iteration_list):
+        style = line_styles.get(name, 'solid')
+        for state, regrets in regrets_per_state.items():
+            iterations = iterations_per_state[state]
+            plt.plot(regrets, iterations,label=f'{name} - state {state}', linestyle=style)
+    
+    # Plot customization
+    plt.title('Cumulative Regret per State for Multiple Agents')
+    plt.xlabel('Iterations')
+    plt.ylabel('Cumulative Regret')
+    plt.legend(loc='best')
+    plt.grid(True)
+    plt.savefig('cumulative_regret_comparison.png')  # Save the plot as a file
