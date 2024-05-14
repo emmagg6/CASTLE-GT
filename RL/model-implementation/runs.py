@@ -206,4 +206,5 @@ std_losses_EQObserver_CCE = np.std(test_lossesEQobserver_CCE, axis=0)
 print(f"\n\nAverage losses EXP3-IX: {average_losses_EQAgent},  Standard Deviation: {std_losses_EQAgent}")
 print(f"\n\nAverage losses Q-learner: {average_losses_EQObserver_Q},  Standard Deviation: {std_losses_EQObserver_Q}")
 print(f"\n\nAverage losses Agent Agnostic EXP3-IX: {average_losses_EQObserver_CCE},  Standard Deviation: {std_losses_EQObserver_CCE}")
+print("\n\n\n")
 
