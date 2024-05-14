@@ -1,0 +1,22 @@
+CybORG v2.1, Scenario2, Commit Hash: Not using git
+author: Dartmouth_Northeastern, team: BlueSTAR, technique: PPO + Greedy decoys + GT
+wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
+Balance Point, 5900
+
+
+
+steps: 30, adversary: B_lineAgent, mean: -27.276300000000003, standard deviation 0.42778499272414877
+
+steps: 50, adversary: B_lineAgent, mean: -49.84310000000001, standard deviation 0.4057545251674682
+
+steps: 100, adversary: B_lineAgent, mean: -106.17600000000002, standard deviation 0.2469122446652992
+
+Steps: 30: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
+
+Steps: 50: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
+
+Steps: 100: PPO action-selection count: 0, CCE action-selection count: 180000, CCE precent: 1.0
+
+
+
+Note: Red is Meander Agent. Balance point: 5900, PPO: 10000.pth, CCE: 10000cce.pkl 
