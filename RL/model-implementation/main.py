@@ -6,8 +6,6 @@ from RedAgent import RedAgent
 from RedAgentBandit import RedAgent
 
 from utility import plot_graph
-from utility import plot_scaled_sum_policy_over_time
-from utility import find_most_favored_action
 from utility import plot_regret
 
 
@@ -38,7 +36,12 @@ def EQasAgent(total_iteration=10000):
     loss_over_all_actions = {action: 0 for action in blueAgentActions}
     regret = []
 
-    for _ in range(total_iteration): 
+    regret_per_state = {}
+    regret_per_state_iteration = {}
+    loss_per_state_action = {}
+    loss_per_state= {}
+
+    for iteration in range(total_iteration): 
         state = env.current_state 
         blueActionIndex = blueAgent.get_action(state)
         # RedActionIndex = redAgent.get_action(redAgentActions)
@@ -46,17 +49,57 @@ def EQasAgent(total_iteration=10000):
         blueAction = blueAgentActions[blueActionIndex]
         RedAction = redAgent.get_action(redAgentActions)
 
-        nextstate,loss = env.step(blueAction,RedAction) 
+        next_state,loss = env.step(blueAction,RedAction) 
         blueAgent.update_policy(state, blueActionIndex,loss)
 
         losses.append(loss)
         log.append([blueAgentActions[blueActionIndex],state,loss])
 
+        if next_state not in regret_per_state:
+            regret_per_state[next_state] = [loss]
+            regret_per_state_iteration[next_state]=[iteration]
+        else:
+            current_total = regret_per_state[next_state][-1]+loss
+            regret_per_state[next_state].append(current_total)
+            regret_per_state_iteration[next_state].append(iteration)
+
+        # ------------------- Total Regret -------------------
         for action in blueAgentActions:
             loss_over_all_actions[action] += env.get_loss(action)
-        
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+
+        best_action_loss = min(loss_over_all_actions.values())
+        regret.append(sum(losses)-best_action_loss)
+
+        # ------------------- Regret per State -------------------
+        # getting the actual loss encountered for each state
+        if next_state not in loss_per_state:
+            loss_per_state[next_state] = [loss]
+        else:
+            loss_per_state[next_state].append(loss)
+
+        # getting the loss as if the agent had chosen each action
+        for action in blueAgentActions:
+            action_loss = env.get_loss(action)
+            if next_state not in loss_per_state_action:
+                loss_per_state_action[next_state] = {action:action_loss} 
+            elif action not in loss_per_state_action[next_state]:
+                loss_per_state_action[next_state][action]=action_loss
+            else:
+                loss_per_state_action[next_state][action] += action_loss
+
+        # calculating the regret for this state
+        if next_state not in regret_per_state:
+            best_loss = min(loss_per_state_action[next_state].values())
+            total_loss = sum(loss_per_state[next_state])
+            regret_per_state[next_state] = [total_loss - best_loss]
+            regret_per_state_iteration[next_state] = [iteration]
+        else:
+            best_loss = min(loss_per_state_action[next_state].values())
+            total_loss = sum(loss_per_state[next_state])
+            regret_per_state[next_state].append(total_loss - best_loss)
+            regret_per_state_iteration[next_state].append(iteration)
+
+
 
     # Output the policy and visit counts
     print(f"Policy for state '{state}':", blueAgent.eq_approx[state])
@@ -64,7 +107,7 @@ def EQasAgent(total_iteration=10000):
 
     # print("log",log)
     # plot_graph(losses,name="EQasAgent")
-    return losses,regret
+    return losses,regret, regret_per_state,regret_per_state_iteration
 
 def EQasObserver(total_iteration=10000):
     print("\nEQ as Observer")
@@ -93,8 +136,7 @@ def EQasObserver(total_iteration=10000):
     # for plotting and logging purposes
     losses = []
     log=[]
-    policy_sums_over_time = {}  # Prepare dictionary to store the data over time
-    checkpoints = []
+
     checkpoint_frequency = total_iteration * 0.05
     # action_count = {"Remove":0,"Restore":0,"Sleep":0}
     action_count = {"Action 2":0,"Action 3":0,"Action 4":0}
@@ -102,6 +144,10 @@ def EQasObserver(total_iteration=10000):
     loss_over_all_actions = {action: 0 for action in blueAgentActions}
     regret = []
 
+    regret_per_state = {}
+    regret_per_state_iteration = {}
+    loss_per_state_action = {}
+    loss_per_state= {}
     for iteration in range(total_iteration): 
         state = env.current_state                                                       # get the current state from teh environment
         BlueActionIndex = blueAgent.choose_action(state)                                # let the Q learning agent choose an action
@@ -118,46 +164,55 @@ def EQasObserver(total_iteration=10000):
         log.append([blueAgentActions[BlueActionIndex],state,loss])
         action_count[blueAgentActions[BlueActionIndex]] += 1
 
+        # ------------------- Total Regret -------------------
         for action in blueAgentActions:
             loss_over_all_actions[action] += env.get_loss(action)
+        best_action_loss = min(loss_over_all_actions.values())
+        regret.append(sum(losses)-best_action_loss)
         
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+        # ------------------- Regret per State -------------------
+        # getting the actual loss encountered for each state
+        if next_state not in loss_per_state:
+            loss_per_state[next_state] = [loss]
+        else:
+            loss_per_state[next_state].append(loss)
 
-        # Print the sum of policy snapshot every fixed iterations
-        # if (iteration + 1) % int(checkpoint_frequency) == 0:
-        #     # print(f"Iteration {iteration + 1}: Sum of Policy Snapshot:")
-        #     checkpoints.append(iteration + 1)  # Record the checkpoint iteration
-        #     for state, policy_sum in EQobserver.sumOfPolicy.items(): 
-        #         if state not in policy_sums_over_time:
-        #             policy_sums_over_time[state] = []  # Initialize it if not present
-        #        # Iterate through each state's policy sums
-        #         print(f"policy_sum: {policy_sum}",state)
-        #         scaled_sum_of_policy = policy_sum[state] / (iteration + 1)  
-        #         policy_sums_over_time[state].append(scaled_sum_of_policy) 
+        # getting the loss as if the agent had chosen each action
+        for action in blueAgentActions:
+            if next_state not in loss_per_state_action:
+                loss_per_state_action[next_state] = {action:env.get_loss(action)} 
+            elif action not in loss_per_state_action[next_state]:
+                loss_per_state_action[next_state][action]=env.get_loss(action)
+            else:
+                loss_per_state_action[next_state][action] += env.get_loss(action)
 
-        
-    # print("log: action, state, loss",log)
-    # best_state,best_action,max_value =find_most_favored_action(EQobserver.sumOfPolicy)
-    # print(EQobserver.sumOfPolicy)
-    # print(f"state {best_state} and action {blueAgentActions[best_action]} has the highset sum of policy value with {max_value}")
-    # print("action count" ,action_count)
-    # plot_graph(losses,name="EQasObserver")
-    # plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAgentActions)   
+        # calculating the regret for this state
+        if next_state not in regret_per_state:
+            best_loss = min(loss_per_state_action[next_state].values())
+            total_loss = sum(loss_per_state[next_state])
+            regret_per_state[next_state] = [total_loss - best_loss]
+            regret_per_state_iteration[next_state] = [iteration]
+        else:
+            best_loss = min(loss_per_state_action[next_state].values())
+            total_loss = sum(loss_per_state[next_state])
+            regret_per_state[next_state].append(total_loss - best_loss)
+            regret_per_state_iteration[next_state].append(iteration)
 
-    # Output the policy and visit counts
     print(f"Q-learner: Policy Q-table':\n", blueAgent.q_table)
     print(f"CCE: Policy for state '{state}':", EQobserver.eq_approx_unknown[str(state)])
     print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
-    return losses,regret
+    return losses,regret, regret_per_state,regret_per_state_iteration
     
-lossEQAgent,regretEQAgent = EQasAgent(total_iteration=100)
-lossEQobserver,regretEQobserver = EQasObserver(total_iteration=100)
+lossEQAgent,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent = EQasAgent(total_iteration=10000)
+lossEQobserver,regretEQobserver,regretper_stateEQObserver, regretper_stateIterationEQObserver= EQasObserver(total_iteration=10000)
 
 names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 
-losses_list = [lossEQAgent, lossEQobserver]
+losses_list = [lossEQAgent, lossEQobserver] 
 regret_list = [regretEQAgent, regretEQobserver]
+regret_per_state_list = [regretper_stateEQAgent,regretper_stateEQObserver]
+regret_per_state_iteration_list = regretper_stateIterationEQObserver
 
 plot_graph(losses_list, names_list,"Loss")
 plot_graph(regret_list, names_list,"Regret")
+plot_regret(names_list,regretper_stateIterationEQObserver,regretper_stateEQObserver,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent)
