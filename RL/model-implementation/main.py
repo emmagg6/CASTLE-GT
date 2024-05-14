@@ -66,9 +66,9 @@ def EQasAgent(total_iteration=10000):
         # ------------------- Total Regret -------------------
         for action in blueAgentActions:
             loss_over_all_actions[action] += env.get_loss(action)
-        
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+
+        best_action_loss = min(loss_over_all_actions.values())
+        regret.append(sum(losses)-best_action_loss)
 
         # ------------------- Regret per State -------------------
         # getting the actual loss encountered for each state
@@ -136,8 +136,7 @@ def EQasObserver(total_iteration=10000):
     # for plotting and logging purposes
     losses = []
     log=[]
-    policy_sums_over_time = {}  # Prepare dictionary to store the data over time
-    checkpoints = []
+
     checkpoint_frequency = total_iteration * 0.05
     # action_count = {"Remove":0,"Restore":0,"Sleep":0}
     action_count = {"Action 2":0,"Action 3":0,"Action 4":0}
@@ -168,9 +167,8 @@ def EQasObserver(total_iteration=10000):
         # ------------------- Total Regret -------------------
         for action in blueAgentActions:
             loss_over_all_actions[action] += env.get_loss(action)
-
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
+        best_action_loss = min(loss_over_all_actions.values())
+        regret.append(sum(losses)-best_action_loss)
         
         # ------------------- Regret per State -------------------
         # getting the actual loss encountered for each state
@@ -205,16 +203,16 @@ def EQasObserver(total_iteration=10000):
     print(f"CCE: Visit counts for state '{state}':", EQobserver.visit_count_unknown[str(state)])
     return losses,regret, regret_per_state,regret_per_state_iteration
     
-lossEQAgent,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent = EQasAgent(total_iteration=100000)
-lossEQobserver,regretEQobserver,regretper_stateEQObserver, regretper_stateIterationEQObserver= EQasObserver(total_iteration=100000)
+lossEQAgent,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent = EQasAgent(total_iteration=10000)
+lossEQobserver,regretEQobserver,regretper_stateEQObserver, regretper_stateIterationEQObserver= EQasObserver(total_iteration=10000)
 
 names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]
 
-losses_list = [lossEQAgent, lossEQobserver]
+losses_list = [lossEQAgent, lossEQobserver] 
 regret_list = [regretEQAgent, regretEQobserver]
 regret_per_state_list = [regretper_stateEQAgent,regretper_stateEQObserver]
-regret_per_state_iteration_list = [regretper_stateIterationEQAgent,regretper_stateIterationEQObserver]
+regret_per_state_iteration_list = regretper_stateIterationEQObserver
 
 plot_graph(losses_list, names_list,"Loss")
 plot_graph(regret_list, names_list,"Regret")
-plot_regret(names_list,regret_per_state_iteration_list,regret_per_state_list)
+plot_regret(names_list,regretper_stateIterationEQObserver,regretper_stateEQObserver,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent)

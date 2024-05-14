@@ -5,11 +5,6 @@ from ThirdAgentClass import QLearningAgent
 from RedAgent import RedAgent
 from RedAgentBandit import RedAgent
 
-from utility import plot_graph
-from utility import plot_scaled_sum_policy_over_time
-from utility import find_most_favored_action
-from utility import plot_regret
-
 import numpy as np
 
 

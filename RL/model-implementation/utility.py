@@ -52,50 +52,38 @@ def plot_scaled_sum_policy_over_time(policy_sums_over_time, checkpoints, blueAge
     plt.save('scaled_sum_policy_over_time.png')
 
 
-
-def find_most_favored_action(sumOfPolicy):
-    max_value = -float('inf')  
-    favored_state = None
-    favored_action = None
-
-    # Iterate through each state's policy sums
-    for state, policy_sums in sumOfPolicy.items():
-        # Find the action with the highest cumulative policy sum in this state
-        max_action_index = np.argmax(policy_sums)  # Assuming policy_sums is a numpy array
-        max_action_value = policy_sums[max_action_index]
-        
-        # Check if this action's max is the highest found so far across all states
-        if max_action_value > max_value:
-            max_value = max_action_value
-            favored_state = state
-            favored_action = max_action_index
-
-    return favored_state, favored_action, max_value
-
-def plot_regret(names_list, regret_per_state_list, regret_per_state_iteration_list):
+def plot_regret(names_list,regretper_stateIterationEQObserver,regretper_stateEQObserver,regretEQAgent,regretper_stateEQAgent,regretper_stateIterationEQAgent):
     """
+    total + y=x
     Plots cumulative regret per state for multiple agents.
 
     :param names_list: List of names for each agent.
     :param regret_per_state_list: List of dictionaries with cumulative regrets per state for each agent.
     :param regret_per_state_iteration_list: List of dictionaries with iteration counts for regrets per state for each agent.
     """
-    plt.figure(figsize=(15, 10))  # Set a larger figure size for better readability
-    line_styles = {
-        "EXP3-IX": 'solid',  # Example: Solid line for EXP3-IX
-        "Agent-Agnostic EXP3-IX": 'dashed'  # Example: Dashed line for Agent-Agnostic EXP3-IX
-    }
-    # Loop through each agent's data
-    for name, regrets_per_state, iterations_per_state in zip(names_list, regret_per_state_list, regret_per_state_iteration_list):
-        style = line_styles.get(name, 'solid')
-        for state, regrets in regrets_per_state.items():
-            iterations = iterations_per_state[state]
-            plt.plot(regrets, iterations,label=f'{name} - state {state}', linestyle=style)
-    
-    # Plot customization
-    plt.title('Cumulative Regret per State for Multiple Agents')
-    plt.xlabel('Iterations')
+    plt.figure(figsize=(15, 10))  
+
+    time_steps = np.arange(1, len(regretEQAgent) + 1)
+    cumulative_losses = np.cumsum(regretEQAgent)
+    plt.plot(time_steps, cumulative_losses, label="EXP3-IX", color="red",linestyle="solid")
+
+    # print(regretper_stateIterationEQObserver)
+    islabeled =False
+    for state, regrets in regretper_stateEQObserver.items():
+        iterations = regretper_stateIterationEQObserver[state]
+        if islabeled == False:
+            plt.plot(iterations, regrets,label=f'Agent-Agnostic EXP3-IX (per state)', color="black",linestyle="solid")
+            islabeled = True
+        else:
+            plt.plot(iterations, regrets, color="black",linestyle="solid")
+
+    y_equals_x = np.arange(1, 276)
+    plt.plot(y_equals_x, y_equals_x, label='Linear Regret Line', color='blue', linestyle='dashed')
+
+    plt.title('Cumulative Regret per State Over Time')
+    plt.xlabel('Time')
     plt.ylabel('Cumulative Regret')
+    plt.ylim(0,275)
     plt.legend(loc='best')
     plt.grid(True)
-    plt.savefig('cumulative_regret_comparison.png')  # Save the plot as a file
+    plt.savefig('cumulative_regret_comparison.png')  
