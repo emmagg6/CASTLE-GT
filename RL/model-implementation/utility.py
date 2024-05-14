@@ -62,10 +62,10 @@ def plot_regret(names_list,regretper_stateIterationEQObserver,regretper_stateEQO
     :param regret_per_state_iteration_list: List of dictionaries with iteration counts for regrets per state for each agent.
     """
     plt.figure(figsize=(15, 10))  
-
+    plt.rcParams.update({'font.size': 20})
     time_steps = np.arange(1, len(regretEQAgent) + 1)
     cumulative_losses = np.cumsum(regretEQAgent)
-    plt.plot(time_steps, cumulative_losses, label="EXP3-IX", color="red",linestyle="solid")
+    # plt.plot(time_steps, cumulative_losses, label="EXP3-IX", color="red",linestyle="solid")
 
     # print(regretper_stateIterationEQObserver)
     islabeled =False
