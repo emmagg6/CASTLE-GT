@@ -1,10 +1,9 @@
-from EnvironmentBandit import Environment
+from EnvironmentBanditClass import Environment
 from EQApproximationClass import EqApproximation
-from ThirdAgentClass import QLearningAgent
-from RedAgentBandit import RedAgent
+from QLearningClass import QLearningAgent
+from StochasticityClass import Stochasticity
 
 import numpy as np
-
 
 def EQasAgent(total_iteration=10000, trials = 0):
     print("\nEQ as Agent")
@@ -19,14 +18,7 @@ def EQasAgent(total_iteration=10000, trials = 0):
     redAgentActions = ["Action 0", "Action 1"]                                            # Action 0: noOp; Action 1: Attack
 
     blueAgent =EqApproximation(states, num_actions=3, T=total_iteration)                   # gamma and eta set to 0.01 and 0.1 for simplicity
-                                                                 # for simplicity: red agent will attack once for 5 time step 
-    redAgent = RedAgent()
-
-    # for plotting and loggin purposes
-    training_losses = []
-    log=[]
-    loss_over_all_actions = {action: 0 for action in blueAgentActions}
-    regret = []
+    redAgent = Stochasticity()
 
     ################# TRAINING #################
     for _ in range(total_iteration): 
@@ -38,16 +30,6 @@ def EQasAgent(total_iteration=10000, trials = 0):
 
         nextstate,loss = env.step(blueAction,RedAction) 
         blueAgent.update_policy(state, blueActionIndex,loss)
-
-        training_losses.append(loss)
-        log.append([blueAgentActions[blueActionIndex],state,loss])
-
-        for action in blueAgentActions:
-            loss_over_all_actions[action] += env.get_loss(action)
-        
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(training_losses)-loss_over_all_actions[best_current_action])
-
 
     ################# TESTING #################
     testing_losses = []
@@ -67,7 +49,7 @@ def EQasAgent(total_iteration=10000, trials = 0):
             losses += loss
         testing_losses[trial].append(losses)
 
-    return training_losses, regret, testing_losses
+    return testing_losses
 
 def EQasObserver(total_iteration=10000, trials = 0):
     print("\nEQ as Observer")
@@ -89,15 +71,7 @@ def EQasObserver(total_iteration=10000, trials = 0):
 
     # initialization 3:   
     redAgentAction = ["Action 0", "Action 1"]
-    redAgent = RedAgent() 
-
-    # for plotting and logging purposes
-    losses = []
-    log=[]
-    action_count = {"Action 2":0,"Action 3":0,"Action 4":0}
-
-    loss_over_all_actions = {action: 0 for action in blueAgentActions}
-    regret = []
+    redAgent = Stochasticity() 
 
 
     ################# TRAINING #################
@@ -111,18 +85,6 @@ def EQasObserver(total_iteration=10000, trials = 0):
         blueAgent.update_q_table(state, BlueActionIndex,loss,next_state)                     # update the policy for the Q learning agent
 
         EQobserver.observe_and_update_adaptation(state, BlueAction, loss)
-
-        # ------------------- Logging -------------------
-        losses.append(loss)
-        log.append([blueAgentActions[BlueActionIndex],state,loss])
-        action_count[blueAgentActions[BlueActionIndex]] += 1
-
-        for action in blueAgentActions:
-            loss_over_all_actions[action] += env.get_loss(action)
-        
-        best_current_action = min(loss_over_all_actions, key=loss_over_all_actions.get)
-        regret.append(sum(losses)-loss_over_all_actions[best_current_action])
-
 
     ################# TESTING #################
     testing_losses_Q = []
@@ -157,13 +119,13 @@ def EQasObserver(total_iteration=10000, trials = 0):
         testing_losses_CCE[trial].append(losses_CCE)
     
 
-    return losses, regret, testing_losses_Q, testing_losses_CCE
+    return testing_losses_Q, testing_losses_CCE
 
 
 TRIALS = 100
 
-lossEQAgent, regretEQAgent, test_lossesEQAgent = EQasAgent(total_iteration=100, trials = TRIALS)
-lossEQobserver, regretEQobserver, test_lossesEQobserver_Q, test_lossesEQobserver_CCE = EQasObserver(total_iteration=100, trials = TRIALS)
+test_lossesEQAgent = EQasAgent(total_iteration=100, trials = TRIALS)
+test_lossesEQobserver_Q, test_lossesEQobserver_CCE = EQasObserver(total_iteration=100, trials = TRIALS)
 
 
 names_list = ["EXP3-IX", "Agent-Agnostic EXP3-IX"]

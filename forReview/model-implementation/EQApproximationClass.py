@@ -65,25 +65,6 @@ class EqApproximation:
 
         estimated_loss = loss / (action + self.gamma)                                                             # estimated loss for the chosen action
         self.eq_approx[state][chosen_action] *= np.exp(-self.eta * estimated_loss)                              # update the policy for the chosen action
-
-
-    # def observe_and_update(self, state, action, loss):
-    #     """
-    #         used when the agent is not the one interacting with the environment
-    #     """
-        
-    #     self.visit_count[state][action] += 1
-        
-    #     currentPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                                    # normalize the policy to a probability distribution
-    #     self.sumOfPolicy[state] += currentPolicy                                                                 # sum of the policy for all actions
-
-    #     action_prob = currentPolicy[action]
-
-    #     estimated_loss = loss / ((action_prob+ 1e-50) + self.gamma)
-
-    #     self.eq_approx[state][action] *= np.exp(-self.eta * estimated_loss)
-  
-        
     def observe_and_update_adaptation(self, state, action, loss):
         """
             extension for larger environments
