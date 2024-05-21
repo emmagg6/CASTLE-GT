@@ -110,19 +110,6 @@ Generates
 
 
 
-################################### TASK SIMILARITY ###################################
-
-    '''
-To interpret $\alpha=0$ and $\alpha=1$ as independent samples...
-
-Here's a possibility: sample two random sets of points $x_0$ and $x_1$ from a 2D normal.  
-Interpolate between them as
-
-    x_\alpha = \cos(\frac{\pi}{2} \alpha) \times x_0 + \sin(\frac{\pi}{2} \alpha) \times x_1
-
-for $\alpha\in[0,0.5]$. 
-
-    '''
 
 def combining_tasks(x0, x1, alps) :
   Z = np.zeros((len(alps), len(x0), 2))

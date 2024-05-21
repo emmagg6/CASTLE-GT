@@ -62,10 +62,10 @@ print('Average CCE Count:', np.mean(cce_counts))
 # Plot the precentage of cce actions per zeta value
 '''
 plt.scatter(zetas_lst, prop, color='black', alpha=0.1)
-plt.xlabel('Zeta Value')
-plt.ylabel('Percentage of CCE Actions')
-plt.xlim(25000, 310000)
-plt.savefig('bit_clipped_full_cce_percentage.png')
+plt.xlabel('Minimum observation-action visits (zeta) of EXP3-IXRL approximation')
+plt.ylabel('Percentage of EXP3-IXRL Actions')
+plt.xlim(25000, 350000)
+plt.savefig('final_cce_percentage.png')
 
 
 
@@ -110,7 +110,7 @@ std_devs = data_exploded.groupby('Zeta').std()
 
 plt.figure(figsize=(10, 6))
 plt.errorbar(mean_dists.index, mean_dists['Distance'], yerr=std_devs['Distance'], 
-             fmt='o:', capsize=1, color='black', label='RLxCCE Agent',
+             fmt='o:', capsize=1, color='black', label='EXP3-IXRL',
              elinewidth=1, capthick=1)
 
 # add green horizonatal line at 31229.347695 with std 160.103771 with label 'RL Agent'
@@ -118,14 +118,14 @@ plt.axhline(y=31229.347695, color='blue', linestyle='--', label='RL Agent')
 # plt.axhline(y=31229.347695 + 160.103771, color='green', linestyle=':', label='RL Agent + STD', alpha=0.15)
 # plt.axhline(y=31229.347695 - 160.103771, color='green', linestyle=':', label='RL Agent - STD', alpha=0.15)
 
-plt.title('Average Distance vs CCE Certainty')
-plt.xlabel('Minimum observation-action visits (certainty) of CCE')
+plt.title('Average Distance vs Certainty')
+plt.xlabel('Minimum observation-action visits (zeta) of EXP3-IXRL approximation')
 plt.ylabel('Distance to Goal State')
 # plt.xlim(12000, 305000)
 plt.grid(True)
 plt.legend(loc='upper right', fontsize='small')
 
-plt.savefig('bit_clipped_full_distance_vs_cce.png')
+plt.savefig('final_distance_vs_cce.png')
 
 
 
@@ -148,14 +148,14 @@ plt.axhline(y=31229.347695, color='green', linestyle='--', label='RL Agent')
 # plt.axhline(y=31229.347695 + 160.103771, color='green', linestyle=':', label='RL Agent + STD', alpha=0.15)
 # plt.axhline(y=31229.347695 - 160.103771, color='green', linestyle=':', label='RL Agent - STD', alpha=0.15)
 
-plt.title('Average Distance vs CCE Proportion')
-plt.xlabel('Percentage of CCE Actions')
+plt.title('Average Distance vs Proportion of EXP3-IXRL Action-Selection ')
+plt.xlabel('Percentage of EXP3-IXRL Actions')
 plt.ylabel('Distance to Goal State')
 plt.grid(True)
 
 plt.legend(loc='upper right', fontsize='small')
 
-# plt.savefig('sparse_distance_vs_cce_percentage.png')
+# plt.savefig('final_distance_vs_cce_percentage.png')
 
 
 
