@@ -45,19 +45,19 @@ else:
 
     # Plotting RLxCCE Agent
     plt.figure(figsize=(10, 6))
-    plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='black', label='Agent-Agnostic EXP3-IX')
+    plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='black', label='EXP3-IXRL')
 
     # Mean Lines for purely PPO RL Agent (Red) and Extended (fully) Training RL Agent (Dark Green)
     rl_mean = -106.1025
     extended_rl_mean = -53.8897
     plt.axhline(y=rl_mean, color='blue', linestyle='dashed', linewidth=2, label='RL Agent')
-    plt.axhline(y=extended_rl_mean, color='darkgreen', linestyle=':', linewidth=2, label='RL Agent x10 training')
+    # plt.axhline(y=extended_rl_mean, color='darkgreen', linestyle=':', linewidth=2, label='RL Agent x10 training')
 
-    plt.title('Rewards vs CCE Certainty')
-    plt.xlabel('Minimum observation-action visits (certainty) of CCE')
+    plt.title('Rewards vs Certainty')
+    plt.xlabel('Minimum observation-action visits (certainty measure) for the EXP3-IXRL approximation')
     plt.ylabel('Rewards (over 30 steps)')
     plt.grid(True)
     plt.legend(loc='lower right', fontsize='small')
 
-    plt.savefig('/scratch/egraham/CASTLE-GT/RL/CC2-implementation/Results/plot-partial-2.png')
+    plt.savefig('/scratch/egraham/CASTLE-GT/RL/CC2-implementation/Results/plot-final.png')
     print("Plot saved to CASTLE-GT/RL/CC2-implementation/Results/")
