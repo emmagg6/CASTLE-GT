@@ -1,6 +1,0 @@
-blue_agent,red_agent,steps,avg_reward,std,label
-CoBlue-BASE-half,B_line,100',-1033.1895,158.0743955,Halfway-trained
-CoBlue-BASE-half,Meander,100,-902.3333,95.43201061,Halfway-trained
-CoBlue-BASE,B_line,100,-773.3814,364.1115754,Fully-trained
-CoBlue-BASE,Meander,100,-346.4563,223.3817523,Fully-trained
-

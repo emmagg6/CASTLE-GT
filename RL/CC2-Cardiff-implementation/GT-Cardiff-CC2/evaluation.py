@@ -14,7 +14,7 @@ MAX_EPS = 1000
 agent_name = 'PPOxCCE'
 random.seed(0)
 
-zetas = list(range(0, 30000, 500))
+zetas = list(range(30000, 35000, 500))
 # zetas = [10]
 
 # changed to ChallengeWrapper2

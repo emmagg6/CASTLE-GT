@@ -1,5 +1,0 @@
-nohup: ignoring input
-Restoring Red from /net/data/idsgnn/cotrain_both/Red_25000.pth internal False
-using CybORG v2.1, Scenario2
-
-Average reward against blue agent CardiffPPOAgent and steps 100 is: 29.955199999999994 with a standard deviation of 53.21508224120243

@@ -1,5 +1,0 @@
-blue_agent,red_agent,steps,avg_reward,std,label
-Cardiff-Bline,Meander,100,-527.57,256.78,steps=100
-"CoBlue (cotrained PPO)",Meander,100,-23.1391,48.43,steps=100
-"Cardiff-Meander (baseline)",Meander,100,-16.6,0,steps=100
-

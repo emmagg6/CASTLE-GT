@@ -1,6 +1,0 @@
-nohup: ignoring input
-Restoring Red from /net/data/idsgnn/cotrain_both/Red_25000.pth internal False
-using CybORG v2.1, Scenario2
-
-Restoring Blue from  /net/data/idsgnn/cotrain_both/Blue_25000.pth internal True
-Average reward against blue agent BluePPOAgent and steps 100 is: 53.141 with a standard deviation of 81.8462154408008
