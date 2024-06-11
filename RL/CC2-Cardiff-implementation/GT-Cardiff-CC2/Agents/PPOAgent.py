@@ -10,7 +10,6 @@ from CybORG.Agents import BaseAgent
 import numpy as np
 import copy
 
-from .Exp3IXrl import CCE
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 

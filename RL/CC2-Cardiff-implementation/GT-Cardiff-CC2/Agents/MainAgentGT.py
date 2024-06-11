@@ -1,9 +1,3 @@
-'''
-TO BE COMPLETE FIXED THIS IS JUST MARKED UP FOR AN OUTLINE
-
-'''
-
-
 import copy
 
 from .PPOAgent import PPOAgent
@@ -11,12 +5,11 @@ from .BlueSleepAgent import BlueSleepAgent
 import numpy as np
 import os
 
-# from .ApproxCCE import CCE
-from .ApproxCCEv2 import CCE
+from .Exp3IXrl import CCE
 
 
-class GenericAgent(PPOAgent):
-    def __init__(self, model_dir, balance, model_file_PPO="10000.pth",  model_file_GT="10000cce.pkl"):
+class MainAgent(PPOAgent):
+    def __init__(self, model_dir, balance, model_file_PPO="model.pth",  model_file_GT="modelcce.pkl"):
         self.model_dir = model_dir
 
         self.model_file_ppo = model_file_PPO
@@ -46,7 +39,7 @@ class GenericAgent(PPOAgent):
 
         # load agent based on fingerprint
         elif self.agent_loaded is False:
-            self.agent = self.load_generic()
+            self.agent = self.load_bline()
 
             self.agent_loaded = True
             # add decoys and scan state
@@ -111,6 +104,11 @@ class GenericAgent(PPOAgent):
 
     def load_sleep(self):
         return BlueSleepAgent()
+    
+    def load_bline(self):
+        ckpt = os.path.join(os.getcwd(),"Models","bline","model.pth")
+        return PPOAgent(52, self.action_space, restore=True, ckpt=ckpt,
+                       deterministic=True, training=False)
 
     def load_generic(self):
         ckpt = os.path.join(os.getcwd(),"Models", self.model_dir, self.model_file_ppo)

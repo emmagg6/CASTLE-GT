@@ -72,7 +72,8 @@ class CCE():
         if s in self.cce:
             return {action: data[0] for action, data in self.cce[s].items()}
         else:
-            print(f"No data available for state {s}.")
+            print(f"Equil: No data available for state {s}.")
+            t = 5 / 0
             return {}
 
 
@@ -118,7 +119,7 @@ class CCE():
             valid_actions = {a: eq_approx_dict[a] for a in eq_approx_dict if visit_count_dict[a] >= balance}
             if valid_actions:
                 if list(valid_actions.values()).count(max(valid_actions.values())) > 1:
-                    print(f"Multiple 'best actions' : {list(valid_actions.values()).count(max(valid_actions.values()))}")
+                    # print(f"Multiple 'best actions' : {list(valid_actions.values()).count(max(valid_actions.values()))}")
                     best_actions = [a for a in valid_actions if valid_actions[a] == max(valid_actions.values())]
                     '''
                     Ok, two options, either chose the highest count out of the best options. OR:
@@ -130,7 +131,7 @@ class CCE():
 
                 best_action = max(valid_actions, key=valid_actions.get)
             else:
-                print(f"No actions visited more than {balance} times.")
+                # print(f"No actions visited more than {balance} times.")
                 return None, False  # or some default action, depending on requirements
             
             # best_eq_approx = eq_approx_dict[best_action]
@@ -138,7 +139,8 @@ class CCE():
             # print(best_action, best_eq_approx, visits)
             return best_action, True
         else:
-            print(f"No data available for state {state_key}.")
+            # print(f"No action data available for state {state_key}.")
+            # t = 5/0
             return None, False  # or some default action, depending on requirements
     
     def load_eq(self, path):

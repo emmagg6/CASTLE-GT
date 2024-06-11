@@ -95,11 +95,11 @@ if __name__ == '__main__':
     start_actions = [1004, 1004, 1000] # user 2 decoy * 2, ent0 decoy
 
     print_interval = 50
-    save_interval = 500 #200
-    max_episodes = 1000 # 100000
+    save_interval = 5000 #200
+    max_episodes = 10000 # 100000
     max_timesteps = 100
     # 200 episodes for buffer
-    update_timesteps = 500 #20000
+    update_timesteps = 2000 #20000
     K_epochs = 6
     eps_clip = 0.2
     gamma = 0.99
