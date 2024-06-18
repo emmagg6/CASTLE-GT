@@ -14,8 +14,8 @@ MAX_EPS = 1000
 agent_name = 'PPOxCCE'
 random.seed(0)
 
-zetas = list(range(30000, 35000, 500))
-# zetas = [10]
+zetas = list(range(0, 500, 50))
+# zetas = [100]
 
 # changed to ChallengeWrapper2
 def wrap(env):

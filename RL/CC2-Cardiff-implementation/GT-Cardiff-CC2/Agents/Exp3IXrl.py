@@ -137,6 +137,7 @@ class CCE():
             # best_eq_approx = eq_approx_dict[best_action]
             # visits = visit_count_dict[best_action]
             # print(best_action, best_eq_approx, visits)
+            print("action:", best_action)
             return best_action, True
         else:
             # print(f"No action data available for state {state_key}.")
