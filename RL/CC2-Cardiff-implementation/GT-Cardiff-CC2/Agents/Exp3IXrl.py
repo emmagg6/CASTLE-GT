@@ -72,8 +72,8 @@ class CCE():
         if s in self.cce:
             return {action: data[0] for action, data in self.cce[s].items()}
         else:
-            print(f"Equil: No data available for state {s}.")
-            t = 5 / 0
+            # print(f"Equil: No data available for state {s}.")
+            # t = 5 / 0
             return {}
 
 
@@ -137,7 +137,7 @@ class CCE():
             # best_eq_approx = eq_approx_dict[best_action]
             # visits = visit_count_dict[best_action]
             # print(best_action, best_eq_approx, visits)
-            print("action:", best_action)
+            # print("action:", best_action)
             return best_action, True
         else:
             # print(f"No action data available for state {state_key}.")
