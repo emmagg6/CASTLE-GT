@@ -4,7 +4,7 @@ class Cost:
     def __init__(self):
         # Enterprise 1 has high traffic, expensive Restore: cost(E1) = -8; Remove suspicious processes is preferred
         # Enterprise 2 connects to OpServer as root, Restore is imperative: cost(E2) = 0
-        self.cost_per_subnet = {"User": -0.1, "Enterprise": [-0.1, -8, 0, -0.1], "Operational": -10}
+        # self.cost_per_subnet = {"User": -0.1, "Enterprise": [-0.1, -8, 0, -0.1], "Operational": -10}
 
         '''
         self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.1, 'User2':-0.1, 'User3':-0.1, 'User4':-0.1}, 
@@ -60,7 +60,7 @@ class Cost:
         '''
 
         #------------------------------
-        #         C0 -- potentialy check if this is the og
+        #         C0 -- change to original
         #------------------------------
 
         # Enterprise 1 has high traffic, expensive Restore: cost(E1) = -8; Remove suspicious processes is preferred
@@ -82,15 +82,15 @@ class Cost:
         #------------------------------
 
         # now with operational host cost
-        # self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.1, 'User2':-0.1, 'User3':-0.1, 'User4':-0.1},
-        #                         "Enterprise": {'Enterprise0':-1, 'Enterprise1':-1, 'Enterprise2':-1, 'Defender':-0.5},
-        #                         "Operational": {'Op_Server0':-10, 'Op_Host0':-0.1, 'Op_Host1':-0.1, 'Op_Host2':-0.1}}
+        self.cost_per_subnet = {"User": {'User0':-0.2, 'User1':-0.2, 'User2':-0.2, 'User3':-0.2, 'User4':-0.2},
+                                "Enterprise": {'Enterprise0':-1, 'Enterprise1':-1, 'Enterprise2':-1, 'Defender':-0.5},
+                                "Operational": {'Op_Server0':-10, 'Op_Host0':-0.1, 'Op_Host1':-0.1, 'Op_Host2':-0.1}}
 
         #------------------------------
         #         C3
         #------------------------------
 
         # now with operational host cost
-        self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.2, 'User2':-0.3, 'User3':-0.4, 'User4':-0.5},
-                                "Enterprise": {'Enterprise0':-1, 'Enterprise1':-2, 'Enterprise2':-3, 'Defender':-0.5},
-                                "Operational": {'Op_Server0':-10, 'Op_Host0': 0.0, 'Op_Host1': -0.1, 'Op_Host2':-0.2}}
+        # self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.2, 'User2':-0.3, 'User3':-0.4, 'User4':-0.5},
+        #                         "Enterprise": {'Enterprise0':-1, 'Enterprise1':-2, 'Enterprise2':-3, 'Defender':-0.5},
+        #                         "Operational": {'Op_Server0':-10, 'Op_Host0': 0.0, 'Op_Host1': -0.1, 'Op_Host2':-0.2}}
