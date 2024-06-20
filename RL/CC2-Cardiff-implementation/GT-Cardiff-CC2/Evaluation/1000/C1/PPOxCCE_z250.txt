@@ -3,3 +3,7 @@ author: ppoxcce, team: BlueSTAR, technique: PPO + Greedy decoys + CCE
 wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
 
 steps: 30, adversary: B_lineAgent, mean: -13.1943, standard deviation 9.871699344994152, proportion CCE: 0.14
+
+steps: 50, adversary: B_lineAgent, mean: -24.596100000000003, standard deviation 16.35514002983146, proportion CCE: 0.11
+
+steps: 100, adversary: B_lineAgent, mean: -60.087, standard deviation 32.80285320178991, proportion CCE: 0.09

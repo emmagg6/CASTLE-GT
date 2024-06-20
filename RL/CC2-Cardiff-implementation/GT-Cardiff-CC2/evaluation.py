@@ -10,12 +10,12 @@ from Agents.MainAgentGT import MainAgent
 import random
 
 MAX_EPS = 1000
-cost_fcn = "C1"
+cost_fcn = "C4"
 agent_name = 'PPOxCCE' + "-" + cost_fcn
 trn_amnts = ["1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000", "10000"]
 random.seed(0)
 
-zetas = list(range(0, 7500, 250))
+zetas = list(range(0, 7500, 250)) + [100000000000]
 # zetas = [100]
 
 # changed to ChallengeWrapper2
