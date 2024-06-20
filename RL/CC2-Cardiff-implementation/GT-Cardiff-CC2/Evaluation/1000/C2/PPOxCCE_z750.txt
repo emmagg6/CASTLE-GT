@@ -5,3 +5,5 @@ wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
 steps: 30, adversary: B_lineAgent, mean: -6.6064, standard deviation 3.265317954095947, proportion CCE: 0.08
 
 steps: 50, adversary: B_lineAgent, mean: -13.0011, standard deviation 4.8234774514581, proportion CCE: 0.06
+
+steps: 100, adversary: B_lineAgent, mean: -31.0875, standard deviation 7.608165214289706, proportion CCE: 0.05
