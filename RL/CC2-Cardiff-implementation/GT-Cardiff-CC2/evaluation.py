@@ -10,7 +10,7 @@ from Agents.MainAgentGT import MainAgent
 import random
 
 MAX_EPS = 1000
-cost_fcn = "C3"
+cost_fcn = "C1"
 agent_name = 'PPOxCCE' + "-" + cost_fcn
 trn_amnts = ["1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000", "10000"]
 random.seed(0)
@@ -61,8 +61,9 @@ if __name__ == "__main__":
                 data.write(f'author: {name}, team: {team}, technique: {name_of_agent}\n')
                 data.write(f"wrappers: {wrap_line}\n")
 
-            path = str(inspect.getfile(CybORG))
-            path = path[:-10] + f'/Shared/Scenarios/{scenario}-Operations.yaml'
+            # path = str(inspect.getfile(CybORG))
+            # path = path[:-10] + f'/Shared/Scenarios/{scenario}-Operations.yaml'
+            path = '/scratch/egraham/CASTLE-GT/RL/cage-challenge-2-main/CybORG/CybORG/Shared/Scenarios/Scenario2_Operations.yaml'
 
             print(f'using CybORG v{cyborg_version}, {scenario}\n')
 

@@ -73,7 +73,7 @@ if __name__ == '__main__':
     np.random.seed(0)
 
     # change checkpoint directory
-    folder = 'PPOxCCE-C3'
+    folder = 'PPOxCCE-C2'
     ckpt_folder = os.path.join(os.getcwd(), "Models", folder)
     if not os.path.exists(ckpt_folder):
         os.makedirs(ckpt_folder)

@@ -85,9 +85,9 @@ class Cost:
         #------------------------------
 
         # now with operational host cost
-        # self.cost_per_subnet = {"User": {'User0':-0.01, 'User1':-0.01, 'User2':-0.01, 'User3':-0.01, 'User4':-0.01},
-        #                         "Enterprise": {'Enterprise0':-0.5, 'Enterprise1':-0.5, 'Enterprise2':-0.5, 'Defender':-0.5},
-        #                         "Operational": {'Op_Server0':-10, 'Op_Host0':-5, 'Op_Host1':-5, 'Op_Host2':-5}}
+        self.cost_per_subnet = {"User": {'User0':-0.01, 'User1':-0.01, 'User2':-0.01, 'User3':-0.01, 'User4':-0.01},
+                                "Enterprise": {'Enterprise0':-0.5, 'Enterprise1':-0.5, 'Enterprise2':-0.5, 'Defender':-0.5},
+                                "Operational": {'Op_Server0':-10, 'Op_Host0':-5, 'Op_Host1':-5, 'Op_Host2':-5}}
 
         #------------------------------
         #         C3
@@ -95,16 +95,16 @@ class Cost:
         #------------------------------
 
         # now with operational host cost
-        self.cost_per_subnet = {"User": {'User0':-5.0, 'User1':-0.0, 'User2':-5.0, 'User3':-0.0, 'User4':-5.0},
-                                "Enterprise": {'Enterprise0':-0.0, 'Enterprise1':-5.0, 'Enterprise2': 0.0, 'Defender':-5.0},
-                                "Operational": {'Op_Server0':-5.0, 'Op_Host0': -0.0, 'Op_Host1': -5.0, 'Op_Host2':-0.0}}
+        # self.cost_per_subnet = {"User": {'User0':-5.0, 'User1':-0.0, 'User2':-5.0, 'User3':-0.0, 'User4':-5.0},
+        #                         "Enterprise": {'Enterprise0':-0.0, 'Enterprise1':-5.0, 'Enterprise2': 0.0, 'Defender':-5.0},
+        #                         "Operational": {'Op_Server0':-5.0, 'Op_Host0': -0.0, 'Op_Host1': -5.0, 'Op_Host2':-0.0}}
         
         #------------------------------
-        #         C3
+        #         C4
         # they're all important, equally, how to best balance?
         #------------------------------
 
         # now with operational host cost
-        self.cost_per_subnet = {"User": {'User0':-1.0, 'User1':-1.0, 'User2':-1.0, 'User3':-1.0, 'User4':-1.0},
-                                "Enterprise": {'Enterprise0':-1.0, 'Enterprise1':-1.0, 'Enterprise2': 1.0, 'Defender':-1.0},
-                                "Operational": {'Op_Server0':-1.0, 'Op_Host0': -1.0, 'Op_Host1': -1.0, 'Op_Host2':-1.0}}
+        # self.cost_per_subnet = {"User": {'User0':-1.0, 'User1':-1.0, 'User2':-1.0, 'User3':-1.0, 'User4':-1.0},
+        #                         "Enterprise": {'Enterprise0':-1.0, 'Enterprise1':-1.0, 'Enterprise2': 1.0, 'Defender':-1.0},
+        #                         "Operational": {'Op_Server0':-1.0, 'Op_Host0': -1.0, 'Op_Host1': -1.0, 'Op_Host2':-1.0}}
