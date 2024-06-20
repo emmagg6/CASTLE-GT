@@ -20,6 +20,8 @@ class Action:
 
     @property
     def cost(self):
+        # if there is a resource cost for acting, then this should be included in the cost function
+        # return -0.001
         return 0
 
 

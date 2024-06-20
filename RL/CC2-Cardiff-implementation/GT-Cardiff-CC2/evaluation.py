@@ -4,14 +4,13 @@ import time
 from statistics import mean, stdev
 
 from CybORG import CybORG, CYBORG_VERSION
-from CybORG.Agents import B_lineAgent, SleepAgent
-# from CybORG.Agents.SimpleAgents.Meander import RedMeanderAgent
+from CybORG.Agents import B_lineAgent
 from Wrappers.ChallengeWrapper2 import ChallengeWrapper2
 from Agents.MainAgentGT import MainAgent
 import random
 
 MAX_EPS = 1000
-cost_fcn = "C1"
+cost_fcn = "C3"
 agent_name = 'PPOxCCE' + "-" + cost_fcn
 trn_amnts = ["1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000", "10000"]
 random.seed(0)
@@ -63,7 +62,7 @@ if __name__ == "__main__":
                 data.write(f"wrappers: {wrap_line}\n")
 
             path = str(inspect.getfile(CybORG))
-            path = path[:-10] + f'/Shared/Scenarios/{scenario}.yaml'
+            path = path[:-10] + f'/Shared/Scenarios/{scenario}-Operations.yaml'
 
             print(f'using CybORG v{cyborg_version}, {scenario}\n')
 

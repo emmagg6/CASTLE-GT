@@ -12,7 +12,7 @@ from Agents.BlueAgents.ApproxCCEv2 import CCE
 import random
 
 PATH = str(inspect.getfile(CybORG))
-PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2.yaml'
+PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2-Operations.yaml'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 

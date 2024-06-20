@@ -422,4 +422,4 @@ Subnets:
       all:
         in: all
         out: all
-    Size: 100
+    Size: 5

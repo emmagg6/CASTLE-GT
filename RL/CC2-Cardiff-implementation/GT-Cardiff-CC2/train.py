@@ -12,8 +12,9 @@ from Agents.PPOAgent import PPOAgent
 from Agents.Exp3IXrl import CCE
 import random
 
-PATH = str(inspect.getfile(CybORG))
-PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2.yaml'
+# PATH = str(inspect.getfile(CybORG))
+# PATH = PATH[:-10] + '/Shared/Scenarios/Scenario2-Operations.yaml'
+PATH = '/scratch/egraham/CASTLE-GT/RL/cage-challenge-2-main/CybORG/CybORG/Shared/Scenarios/Scenario2_Operations.yaml'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
