@@ -74,24 +74,28 @@ for trn_amnt in trn_intercals:
 
             # Plotting RLxCCE Agent
             plt.figure(figsize=(10, 6))
-            plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='gray', label='EXP3-IXRL', markersize=1)
-            plt.scatter(data_sorted['Balance'], data_sorted['Mean'], c=colors)
 
             # Mean Lines for purely PPO RL Agent (Blue)
-            plt.axhline(y=rl_mean, color='blue', linestyle='dashed', linewidth=2, label='RL Agent', alpha=0.35)
-            plt.axhline(y=rl_mean + rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.35)
-            plt.axhline(y=rl_mean - rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.35)
+            plt.axhline(y=rl_mean, color='blue', linestyle='dashed', linewidth=2, label='RL Agent', alpha=0.5, zorder=1)
+            plt.axhline(y=rl_mean + rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.5, zorder=1)
+            plt.axhline(y=rl_mean - rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.5, zorder=1)
 
+            plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='gray', label='EXP3-IXRL', markersize=1, zorder=1)
 
             plt.title('Rewards vs Certainty')
             plt.xlabel('Minimum observation-action visits (certainty measure) for the EXP3-IXRL approximation')
             plt.ylabel('Rewards (over 30 steps)')
             plt.grid(True)
-            plt.legend(loc='lower right', fontsize='small')
 
             sm = ScalarMappable(cmap=cmap, norm=norm)
             sm.set_array([])
             plt.colorbar(sm, ax=plt.gca(), label='Precentage Exp3-IXrl', shrink=0.7)
+
+            # Scatter plot after other plot elements with increased zorder
+            plt.scatter(data_sorted['Balance'], data_sorted['Mean'], c=colors, zorder=3)
+
+            # Legend after scatter plot
+            plt.legend(loc='lower right', fontsize='small')
 
             plt.savefig(directory + 'plot.png')
 
