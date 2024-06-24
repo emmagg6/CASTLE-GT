@@ -11,8 +11,8 @@ from matplotlib.colors import LinearSegmentedColormap
 
 
 costs = ['C0', 'C1', 'C2', 'C3', 'C4']
-# trn_intercals = ["1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000", "10000"]
-trn_intercals = ["1000", "2000", "3000", "4000"]
+trn_intercals = ["1000", "2000", "3000", "4000", "5000", "6000", "7000", "8000", "9000", "10000"]
+# trn_intercals = ["5000", "6000", "7000", "8000", "9000", "10000"]
 models = []
 
 for trn_amnt in trn_intercals:
@@ -77,10 +77,10 @@ for trn_amnt in trn_intercals:
             plt.errorbar(data_sorted['Balance'], data_sorted['Mean'], yerr=data_sorted['Standard Deviation'], fmt='o:', capsize=5, color='gray', label='EXP3-IXRL', markersize=1)
             plt.scatter(data_sorted['Balance'], data_sorted['Mean'], c=colors)
 
-            # Mean Lines for purely PPO RL Agent (Red) and Extended (fully) Training RL Agent (Dark Green)
-            plt.axhline(y=rl_mean, color='blue', linestyle='dashed', linewidth=2, label='RL Agent')
-            plt.axhline(y=rl_mean + rl_std_dev, color='blue', linestyle=':', linewidth=2)
-            plt.axhline(y=rl_mean - rl_std_dev, color='blue', linestyle=':', linewidth=2)
+            # Mean Lines for purely PPO RL Agent (Blue)
+            plt.axhline(y=rl_mean, color='blue', linestyle='dashed', linewidth=2, label='RL Agent', alpha=0.35)
+            plt.axhline(y=rl_mean + rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.35)
+            plt.axhline(y=rl_mean - rl_std_dev, color='blue', linestyle=':', linewidth=2, alpha=0.35)
 
 
             plt.title('Rewards vs Certainty')
@@ -94,3 +94,5 @@ for trn_amnt in trn_intercals:
             plt.colorbar(sm, ax=plt.gca(), label='Precentage Exp3-IXrl', shrink=0.7)
 
             plt.savefig(directory + 'plot.png')
+
+            plt.close()
