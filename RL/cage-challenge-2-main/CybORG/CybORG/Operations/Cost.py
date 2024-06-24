@@ -74,9 +74,9 @@ class Cost:
         #------------------------------
         
         # hops_u01_e16_02_02_e3
-        # self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.15, 'User2':-0.2, 'User3':-0.25, 'User4':-0.3},
-        #                         "Enterprise": {'Enterprise0':-1, 'Enterprise1':-2, 'Enterprise2':-3, 'Defender':-1},
-        #                         "Operational": {'Op_Server0':-10, 'Op_Host0':-0.2, 'Op_Host1':-0.25, 'Op_Host2':-0.3}}
+        self.cost_per_subnet = {"User": {'User0':-0.1, 'User1':-0.15, 'User2':-0.2, 'User3':-0.25, 'User4':-0.3},
+                                "Enterprise": {'Enterprise0':-1, 'Enterprise1':-2, 'Enterprise2':-3, 'Defender':-1},
+                                "Operational": {'Op_Server0':-10, 'Op_Host0':-0.2, 'Op_Host1':-0.25, 'Op_Host2':-0.3}}
         
 
         #------------------------------
@@ -105,6 +105,6 @@ class Cost:
         #------------------------------
 
         # now with operational host cost
-        self.cost_per_subnet = {"User": {'User0':-1.0, 'User1':-1.0, 'User2':-1.0, 'User3':-1.0, 'User4':-1.0},
-                                "Enterprise": {'Enterprise0':-1.0, 'Enterprise1':-1.0, 'Enterprise2': 1.0, 'Defender':-1.0},
-                                "Operational": {'Op_Server0':-1.0, 'Op_Host0': -1.0, 'Op_Host1': -1.0, 'Op_Host2':-1.0}}
+        # self.cost_per_subnet = {"User": {'User0':-1.0, 'User1':-1.0, 'User2':-1.0, 'User3':-1.0, 'User4':-1.0},
+        #                         "Enterprise": {'Enterprise0':-1.0, 'Enterprise1':-1.0, 'Enterprise2': 1.0, 'Defender':-1.0},
+        #                         "Operational": {'Op_Server0':-1.0, 'Op_Host0': -1.0, 'Op_Host1': -1.0, 'Op_Host2':-1.0}}

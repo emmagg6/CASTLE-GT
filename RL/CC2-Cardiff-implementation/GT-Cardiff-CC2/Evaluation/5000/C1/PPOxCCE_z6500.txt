@@ -1,0 +1,9 @@
+CybORG v2.1, Scenario2, Commit Hash: Not using git
+author: ppoxcce, team: BlueSTAR, technique: PPO + Greedy decoys + CCE
+wrappers: ChallengeWrapper2(env=env, agent_name='Blue')
+
+steps: 30, adversary: B_lineAgent, mean: -6.6425, standard deviation 6.26372876552362, proportion CCE: 0.0
+
+steps: 50, adversary: B_lineAgent, mean: -16.8243, standard deviation 13.04673893763905, proportion CCE: 0.0
+
+steps: 100, adversary: B_lineAgent, mean: -50.8367, standard deviation 27.182467688928828, proportion CCE: 0.0
