@@ -1,0 +1,4 @@
+CybORG v4.0, Scenario4
+Author: KEEP, Team: Cybermonic, Technique: Graph-based PPO With Intra-agent Communication
+Average reward is: -219.45 with a standard deviation of 147.95613429921613
+Using agents {'blue_agent_0': <models.cage4.InductiveGraphPPOAgent object at 0x7f915e1e67d0>, 'blue_agent_1': <models.cage4.InductiveGraphPPOAgent object at 0x7f901f9a3d00>, 'blue_agent_2': <models.cage4.InductiveGraphPPOAgent object at 0x7f901f9a0d90>, 'blue_agent_3': <models.cage4.InductiveGraphPPOAgent object at 0x7f901f9a02b0>, 'blue_agent_4': <models.cage4.InductiveGraphPPOAgent object at 0x7f901f9371f0>}

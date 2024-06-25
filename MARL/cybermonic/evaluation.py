@@ -16,6 +16,10 @@ import json
 import sys
 import os
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s', filename='cybermonic_eval.log', filemode='a')
+
 cyborg_version = CYBORG_VERSION
 EPISODE_LENGTH = 500
 
@@ -106,7 +110,10 @@ def run_evaluation_parallel(submission, log_path, max_eps=100, write_to_file=Tru
     author_header = f"Author: {submission.NAME}, Team: {submission.TEAM}, Technique: {submission.TECHNIQUE}"
 
     envs = []
-    for _ in range(workers):
+    for worker_num in range(workers):
+        print(f'Worker {worker_num} starting')
+        start_worker = datetime.now()
+
         sg = EnterpriseScenarioGenerator(
             blue_agent_class=SleepAgent,
             green_agent_class=EnterpriseGreenAgent,
@@ -116,6 +123,10 @@ def run_evaluation_parallel(submission, log_path, max_eps=100, write_to_file=Tru
         cyborg = CybORG(sg, "sim", seed=seed)
         wrapped_cyborg = submission.wrap(cyborg)
         envs.append((cyborg, wrapped_cyborg))
+        
+        end_worker = datetime.now()
+        difference_worker = end_worker - start_worker
+        print(f'Worker {worker_num} ready after {difference_worker} time')
     
     print(version_header)
     print(author_header)
@@ -212,6 +223,9 @@ def run_evaluation(submission, log_path, max_eps=100, write_to_file=True, seed=N
     version_header = f"CybORG v{cyborg_version}, {scenario}"
     author_header = f"Author: {submission.NAME}, Team: {submission.TEAM}, Technique: {submission.TECHNIQUE}"
 
+    start_load = datetime.now()
+    print(f'Loading CybORG')
+    logging.info(f'Loading CybORG')
     sg = EnterpriseScenarioGenerator(
         blue_agent_class=SleepAgent,
         green_agent_class=EnterpriseGreenAgent,
@@ -220,6 +234,10 @@ def run_evaluation(submission, log_path, max_eps=100, write_to_file=True, seed=N
     )
     cyborg = CybORG(sg, "sim", seed=seed)
     wrapped_cyborg = submission.wrap(cyborg)
+    end_load = datetime.now()
+    difference_load = end_load - start_load
+    print(f'CybORG loaded after {difference_load} time')
+    logging.info(f'CybORG loaded after {difference_load} time')
     
     print(version_header)
     print(author_header)
@@ -238,6 +256,7 @@ def run_evaluation(submission, log_path, max_eps=100, write_to_file=True, seed=N
     actions_log = []
     obs_log = []
     for i in tqdm(range(max_eps)):
+        start_episode = datetime.now()
         observations, _ = wrapped_cyborg.reset()
         r = []
         a = []
@@ -273,10 +292,16 @@ def run_evaluation(submission, log_path, max_eps=100, write_to_file=True, seed=N
                     }
                 )
         total_reward.append(sum(r))
+        logging.info(f'Total reward for episode {i} is {sum(r)}')
+        logging.info(f'Standard deviation for episode {i} is {stdev(total_reward) if len(total_reward) > 1 else 0}')
 
         if write_to_file:
             actions_log.append(a)
+            logging.info(f'Actions for episode {i} are {a}')
             obs_log.append(o)
+        end_episode = datetime.now()
+        difference_episode = end_episode - start_episode
+        logging.info(f'Episode {i} took {difference_episode} time')
 
     end = datetime.now()
     difference = end - start
@@ -287,8 +312,10 @@ def run_evaluation(submission, log_path, max_eps=100, write_to_file=True, seed=N
         f"Average reward is: {reward_mean} with a standard deviation of {reward_stdev}"
     )
     print(reward_string)
+    logging.info(reward_string)
 
     print(f"File took {difference} amount of time to finish evaluation")
+    logging.info(f"File took {difference} amount of time to finish evaluation")
     if write_to_file:
         print(f"Saving results to {log_path}")
         with open(log_path + "summary.txt", "w") as data:

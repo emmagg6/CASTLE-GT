@@ -1,0 +1,8 @@
+2024-06-25 11:58:35,307 - DEBUG - matplotlib data path: /scratch/royleib/miniconda/envs/cc4/lib/python3.10/site-packages/matplotlib/mpl-data
+2024-06-25 11:58:35,311 - DEBUG - CONFIGDIR=/thayerfs/home/f006z60/.config/matplotlib
+2024-06-25 11:58:35,312 - DEBUG - interactive is False
+2024-06-25 11:58:35,312 - DEBUG - platform is linux
+2024-06-25 11:58:35,346 - DEBUG - CACHEDIR=/tmp/xdg_cache_f006z60/matplotlib
+2024-06-25 11:58:35,350 - DEBUG - Using fontManager instance from /tmp/xdg_cache_f006z60/matplotlib/fontlist-v330.json
+2024-06-25 11:58:35,614 - INFO - Loading CybORG
+2024-06-25 11:58:35,615 - INFO - CybORG: Using scenario generator BaseScenarioGenerator
