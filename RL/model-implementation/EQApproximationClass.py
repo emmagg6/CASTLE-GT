@@ -54,16 +54,16 @@ class EqApproximation:
         # print(f"CCE Action: {action}")
         return action
 
-    def update_policy(self, state, chosen_action,loss):
+    def update_policy(self, state, chosen_action, loss):
         """
             update the policy for the respective state and chosed action based on the loss
         """
         
         curerntPolicy = self.eq_approx[state] / np.sum(self.eq_approx[state])                                                # normalize the policy to a probability distribution
         self.sumOfPolicy[state] += curerntPolicy
-        action = curerntPolicy[chosen_action]
+        action_prob = curerntPolicy[chosen_action]
 
-        estimated_loss = loss / (action + self.gamma)                                                             # estimated loss for the chosen action
+        estimated_loss = loss / (action_prob + self.gamma)                                                             # estimated loss for the chosen action
         self.eq_approx[state][chosen_action] *= np.exp(-self.eta * estimated_loss)                              # update the policy for the chosen action
 
 
