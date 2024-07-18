@@ -36,7 +36,7 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
     precents_optimal : np.ndarray
         The percentage of optimal actions the algorithm takes at each step.
     '''
-    n = 10
+    n = bandit.n
 
     average_measures = np.zeros(num_steps)
     precents_optimal = np.zeros(num_steps)
@@ -67,12 +67,16 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
 
                 picked_actions[i] = action # Prepare for calculating the optimal action
 
+                # Calculate the weak regret bound with g >= G_max and G_max <= T => g = T
+                regret_bound[i] += 2 * math.sqrt(math.e - 1) * math.sqrt(algorithm.t * n * math.log(n))
+
         if regret:
             optimal_action = bandit.get_optimal_action() # Overall optimal action
             cummulative_rewards = np.vstack(cummulative_rewards)[:, optimal_action]
             average_measures += cummulative_rewards - rewards # Weak regret            
 
-            regret_bound += (math.exp(1) - 1) * algorithm.gamma * cummulative_rewards + (n * math.log(n)) / algorithm.gamma
+            # Calculate the weak regret bound without upper bound on G_max
+            # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cummulative_rewards + (n * math.log(n)) / algorithm.gamma
 
             # Calculate the optimal action
             precents_optimal += picked_actions == optimal_action
@@ -89,22 +93,25 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
     return average_measures, precents_optimal
 
 
-if __name__ == '__main__':
+def main():
     # epsilon_greedy()
     # ucb()
     # gradient_bandit()
     # gradient_bandit_no_baseline()
     # epsilon_greedy_optimistic()
     # nonstationary()
+    run_exp3()
 
-    num_steps = 10000
-    num_runs = 200
+def run_exp3():
+    num_steps = 1000
+    num_runs = 2000
     algos = [(EXP3, (), {'time_horizon': num_steps})]
 
     average_regret = np.zeros((len(algos), num_steps))
     precents_optimal = np.zeros((len(algos), num_steps))
     regret_bound = np.zeros((len(algos), num_steps))
 
+    # bandit = AdversarialBandit(10, reward_update_func=lambda q_values: np.random.rand(len(q_values)))
     bandit = AdversarialBandit(10)
     for i, (algorithm, args, kwargs) in enumerate(algos):
         (average_regret[i], regret_bound[i]), precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, algorithm, regret=True, *args, **kwargs)
@@ -145,8 +152,6 @@ if __name__ == '__main__':
 
     plt.savefig(folder + 'adversarial.png')
     plt.close()
-
-
 
 def epsilon_greedy():
     num_steps = 1000
@@ -450,3 +455,6 @@ def nonstationary():
 
     plt.savefig(folder + 'nonstationary.png')
     plt.close()
+
+if __name__ == '__main__':
+    main()

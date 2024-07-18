@@ -115,7 +115,7 @@ class AdversarialBandit(BanditEnvironment):
     '''
     Non-stochastic adversarial bandit environment with n actions.
     '''
-    def __init__(self, n: int, q_dist_func: Callable = lambda n: np.random.rand(n)) -> None:
+    def __init__(self, n: int, reward_update_func: Callable = lambda q_values: q_values, q_dist_func: Callable = lambda n: np.random.rand(n)) -> None:
         '''
         Initialize the AdversarialBandit.
 
@@ -123,12 +123,15 @@ class AdversarialBandit(BanditEnvironment):
         ----------
         n : int
             Number of actions.
+        reward_update_func : function, optional
+            A function that takes the true action values [np.ndarray] as input and returns the adversarial rewards [np.ndarrary]. Defaults to do nothing.
         q_dist_func : function, optional
             A function that takes n as input and returns a numpy array of 
             length n containing the true action values. Can be adversarialy chosen.
             Defaults to a np.random.rand(n).
         '''
         super().__init__(n, q_dist_func)
+        self.reward_update_func = reward_update_func
         self.cummulative_rewards = np.zeros(n)
 
     def get_reward(self, action: int) -> float:
@@ -145,7 +148,7 @@ class AdversarialBandit(BanditEnvironment):
         reward : float
             The reward equal to the true action value.
         '''
-        self.q_values = self.q_dist_func(self.n)
+        self.q_values = self.reward_update_func(self.q_values)
         self.cummulative_rewards += self.q_values
         return self.q_values[action]
 

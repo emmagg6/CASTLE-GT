@@ -276,8 +276,8 @@ class GradientBandit(Algorithm):
 
 class EXP3(Algorithm):
     '''
-    Implementation of the EXP3 algorithm from https://cseweb.ucsd.edu/~yfreund/papers/bandits.pdf
-    Assumes rewards are in [0, 1].
+    Implementation of the EXP3 algorithm from https://cseweb.ucsd.edu/~yfreund/papers/bandits.pdf for weak regret.
+    Assumes rewards are in [0, 1]. Upper bound on G_max is T.
     '''
     def __init__(self, n: int, time_horizon: int, gamma: float = None):
         '''
@@ -287,10 +287,10 @@ class EXP3(Algorithm):
         ----------
         n : int
             Number of actions.
-        gamma : float
-            The learning rate.
         time_horizon : int
             The time horizon.
+        gamma : float
+            The learning rate.
         '''
         self.n = n
         self.time_horizon = time_horizon # For g = T in gamma upper bound on G_max in the paper
@@ -300,6 +300,8 @@ class EXP3(Algorithm):
         # Set gamma to the upper bound if not provided
         self.gamma = gamma if gamma is not None else \
             min(1, np.sqrt(n * np.log(n) / ((np.exp(1) - 1) * time_horizon)))
+
+        self.t = 0
 
     def select_action(self) -> int:
         '''
@@ -330,12 +332,15 @@ class EXP3(Algorithm):
 
         self.weights = self.weights * np.exp(self.gamma * estimated_rewards_vector / self.n)
 
+        self.t += 1
+
     def reset(self) -> None:
         '''
         Reset the weights.
         '''
         self.weights = np.ones(self.n)
         self.action_probs = np.ones(self.n)
+        self.t = 0
 
     def __str__(self) -> str:
         return f'EXP3(gamma={self.gamma})'
