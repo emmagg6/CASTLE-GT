@@ -34,7 +34,7 @@ class Algorithm:
 
 class EpsilonGreedy(Algorithm):
     '''
-    Implementation of the EpsilonGreedy algorithm from Sutton and Barto's book.
+    Implementation of the EpsilonGreedy exploration-exploitation algorithm from Sutton and Barto's book.
     '''
     def __init__(self, n: int, epsilon: float, alpha: float = None, q_estimates_func: Callable = lambda n: np.zeros(n)) -> None:
         '''
@@ -88,24 +88,24 @@ class EpsilonGreedy(Algorithm):
             The reward received from the action.
         '''
         if (self.alpha is None):
-            self.action_counts[action] += 1
+            self.action_counts[action] += 1  # Em - good job this is a traditional bias for exploration
             alpha = 1 / self.action_counts[action]
         else:
             alpha = self.alpha
-        self.q_estimates[action] += (reward - self.q_estimates[action]) * alpha
+        self.q_estimates[action] += (reward - self.q_estimates[action]) * alpha # nice this is the action-value for this bandit setting
 
     def reset(self) -> None:
         '''
         Reset the Q-value estimates and action counts.
         '''
-        self.q_estimates = self.q_estimates_func(self.n)
+        self.q_estimates = self.q_estimates_func(self.n) 
         self.action_counts = np.zeros(self.n)
 
     def __str__(self) -> str:
         return f'EpsilonGreedy(epsilon={self.epsilon})'
 
 
-class UCB(Algorithm):
+class UCB(Algorithm):  # Em - this is great and traditionally has shown improvements over the static epsilon greedy strategy. notice the c value influces the exploration-exploitation tradeoff
     '''
     Implementation of the Upper Confidence Bound algorithm from Sutton and Barto's book.
     '''
@@ -174,7 +174,7 @@ class UCB(Algorithm):
         return f'UCB(c={self.c})'
 
 
-class GradientBandit(Algorithm):
+class GradientBandit(Algorithm): # Em - this is a great algorithm (also excels at non-stationary bandits) and is essentially the REINFORCE algorithm for bandits
     '''
     Implementation of the GradientBandit algorithm from Sutton and Barto's book.
     '''
@@ -345,4 +345,76 @@ class EXP3(Algorithm):
     def __str__(self) -> str:
         return f'EXP3(gamma={self.gamma})'
 
+class EXP3IX(Algorithm):
+    '''
+    Implementation of the EXP3-IX algorithm
+    '''
+    def __init__(self, n: int, time_horizon: int, gamma: float = None):
+        '''
+        Initialize the EXP3-IX algorithm.
 
+        Parameters
+        ----------
+        n : int
+            Number of actions.
+        time_horizon : int
+            The time horizon.
+        gamma : float
+            Implicit eXploration parameter
+        eta : float
+            Learning rate term
+
+        '''
+        self.n = n
+        self.time_horizon = time_horizon # For g = T in gamma upper bound on G_max in the paper
+        self.weights = np.ones(n) # w_i(t) in the paper
+        self.action_probs = np.ones(n) # p_i(t) in the paper
+        self.visit_count = np.zeros(n) # N_i(t) in the paper
+
+        self.gamma = np.sqrt((2 * np.log(n))/(n + self.time_horizon)) 
+        self.eta = self.gamma * 2
+
+        self.t = 0
+
+    def select_action(self) -> int:
+        '''
+        Select an action using the EXP3 algorithm.
+
+        Returns
+        -------
+        action : int
+            The selected action.
+        '''
+        self.action_probs = self.weights / np.sum(self.weights)
+        action  = np.random.choice(self.n, p=self.action_probs)
+        self.visit_count[action] += 1
+        return action
+
+    def train(self, action: int, reward: float):
+        '''
+        Train the EXP3 algorithm.
+
+        Parameters
+        ----------
+        action : int
+            The action to take.
+        reward : float
+            The reward received from the action.
+        '''
+        estimated_reward = reward / (self.action_probs[action] + self.gamma) # r_t / (p_t(a) + γ)
+
+        self.weights[action] *= np.exp(- self.eta * estimated_reward)
+        
+        self.t += 1
+
+    def reset(self) -> None:
+        '''
+        Reset the weights.
+        '''
+        self.weights = np.ones(self.n)
+        self.action_probs = np.ones(self.n)
+        self.visit_count = np.zeros(self.n)
+        self.t = 0
+
+    def __str__(self) -> str:
+        return f'EXP3(gamma={self.gamma})'
