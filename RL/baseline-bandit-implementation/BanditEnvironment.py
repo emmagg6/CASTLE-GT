@@ -136,7 +136,7 @@ class AdversarialBandit(BanditEnvironment):
 
     def get_reward(self, action: int) -> float:
         '''
-        First adversarialy choose rewards. Then get the reward for a given action.
+        First adversary choose rewards. Then get the reward for a given action.
 
         Parameters
         ----------

@@ -100,6 +100,7 @@ def main():
     # gradient_bandit_no_baseline()
     # epsilon_greedy_optimistic()
     # nonstationary()
+    
     run_exp3()
 
 def run_exp3():
