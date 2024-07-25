@@ -115,7 +115,7 @@ class AdversarialBandit(BanditEnvironment):
     '''
     Non-stochastic adversarial bandit environment with n actions.
     '''
-    def __init__(self, n: int, reward_update_func: Callable = lambda q_values: q_values, q_dist_func: Callable = lambda n: np.random.rand(n)) -> None:
+    def __init__(self, n: int, reward_update_func: Callable = lambda q_values, t: q_values, q_dist_func: Callable = lambda n: np.random.rand(n)) -> None:
         '''
         Initialize the AdversarialBandit.
 
@@ -124,7 +124,7 @@ class AdversarialBandit(BanditEnvironment):
         n : int
             Number of actions.
         reward_update_func : function, optional
-            A function that takes the true action values [np.ndarray] as input and returns the adversarial rewards [np.ndarrary]. Defaults to do nothing.
+            A function that takes the true action values [np.ndarray] and current time t as input and returns the adversarial rewards [np.ndarrary]. Defaults to do nothing.
         q_dist_func : function, optional
             A function that takes n as input and returns a numpy array of 
             length n containing the true action values. Can be adversarialy chosen.
@@ -133,6 +133,7 @@ class AdversarialBandit(BanditEnvironment):
         super().__init__(n, q_dist_func)
         self.reward_update_func = reward_update_func
         self.cummulative_rewards = np.zeros(n)
+        self.t = 0
 
     def get_reward(self, action: int) -> float:
         '''
@@ -148,8 +149,9 @@ class AdversarialBandit(BanditEnvironment):
         reward : float
             The reward equal to the true action value.
         '''
-        self.q_values = self.reward_update_func(self.q_values)
+        self.q_values = self.reward_update_func(self.q_values, self.t)
         self.cummulative_rewards += self.q_values
+        self.t += 1
         return self.q_values[action]
 
     def get_optimal_action(self) -> int:
@@ -180,4 +182,5 @@ class AdversarialBandit(BanditEnvironment):
         '''
         self.q_values = self.q_dist_func(self.n)
         self.cummulative_rewards = np.zeros(self.n)
+        self.t = 0
     

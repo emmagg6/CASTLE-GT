@@ -351,7 +351,7 @@ class EXP3IX(Algorithm):
     '''
     def __init__(self, n: int, time_horizon: int, gamma: float = None):
         '''
-        Initialize the EXP3-IX algorithm.
+        Initialize the EXP3-IX algorithm. Assuming rewards are in [0, 1] and taking losses as -rewards.
 
         Parameters
         ----------
@@ -369,10 +369,9 @@ class EXP3IX(Algorithm):
         self.time_horizon = time_horizon # For g = T in gamma upper bound on G_max in the paper
         self.weights = np.ones(n) # w_i(t) in the paper
         self.action_probs = np.ones(n) # p_i(t) in the paper
-        self.visit_count = np.zeros(n) # N_i(t) in the paper
 
-        self.gamma = np.sqrt((2 * np.log(n))/(n + self.time_horizon)) 
-        self.eta = self.gamma * 2
+        self.eta = np.sqrt((2 * np.log(n))/(n * self.time_horizon)) 
+        self.gamma = self.eta / 2
 
         self.t = 0
 
@@ -386,9 +385,7 @@ class EXP3IX(Algorithm):
             The selected action.
         '''
         self.action_probs = self.weights / np.sum(self.weights)
-        action  = np.random.choice(self.n, p=self.action_probs)
-        self.visit_count[action] += 1
-        return action
+        return np.random.choice(self.n, p=self.action_probs)
 
     def train(self, action: int, reward: float):
         '''
@@ -401,9 +398,14 @@ class EXP3IX(Algorithm):
         reward : float
             The reward received from the action.
         '''
-        estimated_reward = reward / (self.action_probs[action] + self.gamma) # r_t / (p_t(a) + γ)
+        # Make sure the loss which is l=-r is in [0, 1]
+        estimated_loss = (-1 * reward + 1) / (self.action_probs[action] + self.gamma) # l_t / (p_t(a) + γ)
 
-        self.weights[action] *= np.exp(- self.eta * estimated_reward)
+        # estimated_losses_vector = np.eye(self.n)[action] * estimated_loss
+
+        # self.weights = self.weights * np.exp(-1 * self.eta * estimated_losses_vector)
+
+        self.weights[action] *= np.exp(-1 * self.eta * estimated_loss)
         
         self.t += 1
 
@@ -413,8 +415,7 @@ class EXP3IX(Algorithm):
         '''
         self.weights = np.ones(self.n)
         self.action_probs = np.ones(self.n)
-        self.visit_count = np.zeros(self.n)
         self.t = 0
 
     def __str__(self) -> str:
-        return f'EXP3(gamma={self.gamma})'
+        return f'EXP3IX(gamma={self.gamma})'
