@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 import math
 
-def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int, algorithm: Algorithm, regret: bool = False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int, algorithm: Algorithm, regret: bool = False, trial=False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Train and evaluate the EpsilonGreedy algorithm.
 
@@ -26,7 +26,11 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
         The number of runs to average over.
     algorithm : Algorithm
         The training algorithm to use. E.g. EpsilonGreedy, UCB, etc.
-    *args
+    regret : bool, optional
+        If True, calculate based on regret. Defaults to False.
+    trial : bool, optional
+        If True, use a hardcoded switch of optimal action. Defaults to False.
+    *args, **kwargs
         Additional arguments to pass to the algorithm. E.g. epsilon for EpsilonGreedy.
 
     Returns
@@ -65,22 +69,29 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
                 rewards[i] = rewards[i-1] + reward if i > 0 else reward # Cummulative rewards
                 cummulative_rewards[i] = bandit.get_optimal_value() # If regret - returns cummulative rewards
 
+                if trial:
+                    optimal_action = 8 if i < num_steps/2 else 9 #bandit.get_optimal_action()
+                    cummulative_rewards[i] = cummulative_rewards[i][optimal_action]
+                    precents_optimal[i] += action == optimal_action
+
                 picked_actions[i] = action # Prepare for calculating the optimal action
 
                 # Calculate the weak regret bound with g >= G_max and G_max <= T -> g = T
                 regret_bound[i] += 2 * math.sqrt(math.e - 1) * math.sqrt(algorithm.t * n * math.log(n))
 
         if regret:
-            optimal_action = bandit.get_optimal_action() # Overall optimal action
-            # print(f'Optimal action: {optimal_action + 1}')
-            cummulative_rewards = np.vstack(cummulative_rewards)[:, optimal_action]
+            if not trial:
+                optimal_action = bandit.get_optimal_action() # Overall optimal action
+                # print(f'Optimal action: {optimal_action + 1}')
+                cummulative_rewards = np.vstack(cummulative_rewards)[:, optimal_action]
             average_measures += cummulative_rewards - rewards # Weak regret            
 
             # Calculate the weak regret bound without upper bound on G_max
             # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cummulative_rewards + (n * math.log(n)) / algorithm.gamma
 
-            # Calculate the optimal action
-            precents_optimal += picked_actions == optimal_action
+            if not trial:
+                # Calculate the optimal action
+                precents_optimal += picked_actions == optimal_action
         else:
             average_measures += rewards
 
@@ -102,8 +113,121 @@ def main():
     # epsilon_greedy_optimistic()
     # nonstationary()
     
-    run_exp3()
-    run_exp3ix_adversarial()
+    # run_exp3()
+    # run_exp3ix_adversarial()
+    # exp3ix_trial()
+    exp3ix_dynamic()
+
+def exp3ix_dynamic():
+    num_steps = 10000
+    num_runs = 2000
+    algos = [(EXP3, (), {'time_horizon': num_steps}), (EXP3IX, (), {'time_horizon': num_steps}),
+             (EXP3IX, (), {'time_horizon': num_steps, 'dynamic_eta': True})]
+
+    average_regret = np.zeros((len(algos), num_steps))
+    precents_optimal = np.zeros((len(algos), num_steps))
+    regret_bound = np.zeros((len(algos), num_steps))
+
+    bandit = AdversarialBandit(10, reward_update_func=lambda q_values, t: np.concatenate([np.random.binomial(1, 0.5, len(q_values) - 2),
+                                                                                       np.random.binomial(1, 0.5 + 0.1, 1),
+                                                                                       np.random.binomial(1, 0.5 - 0.1 if t < num_steps/2 else 0.5 + 4*0.1, 1)]))
+    for i, (algorithm, args, kwargs) in enumerate(algos):
+        (average_regret[i], regret_bound[i]), precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, algorithm, regret=True, trial=True, *args, **kwargs)
+    folder = './results/exp3ix_dynamic/'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    np.save(folder + 'average_regret.npy', average_regret)
+    np.save(folder + 'percent_optimal.npy', precents_optimal)
+    print('saved average regret and percent optimal')
+
+    # average_rewards = np.load('average_rewards.npy')
+    # precents_optimal = np.load('percent_optimal.npy')
+
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    plt.plot(average_regret[0], label='EXP3')
+    plt.plot(average_regret[1], label='EXP3IX')
+    plt.plot(average_regret[2], label='EXP3IX_dynamic')
+    plt.plot(regret_bound[0], label='Regret Bound')
+    plt.xlabel('steps')
+    plt.ylabel('average regret')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(precents_optimal[0] * 100, label='EXP3')
+    plt.plot(precents_optimal[1] * 100, label='EXP3IX')
+    plt.plot(precents_optimal[2] * 100, label='EXP3IX_dynamic')
+    plt.xlabel('steps')
+    plt.ylabel('% optimal action')
+    plt.legend()
+
+    # Define a formatter function for percentages
+    def to_percent(y, position):
+        # Format tick label as percentage
+        return '{:.0f}%'.format(y)
+
+    # Create a FuncFormatter object using the formatter function
+    formatter = FuncFormatter(to_percent)
+
+    # Apply the formatter to the y-axis of the second subplot
+    plt.gca().yaxis.set_major_formatter(formatter)
+
+    plt.savefig(folder + 'exp3ix_dynamic.png')
+    plt.close()
+
+def exp3ix_trial():
+    num_steps = 10000
+    num_runs = 2000
+    algos = [(EXP3, (), {'time_horizon': num_steps}), (EXP3IX, (), {'time_horizon': num_steps})]
+
+    average_regret = np.zeros((len(algos), num_steps))
+    precents_optimal = np.zeros((len(algos), num_steps))
+    regret_bound = np.zeros((len(algos), num_steps))
+
+    bandit = AdversarialBandit(10, reward_update_func=lambda q_values, t: np.concatenate([np.random.binomial(1, 0.5, len(q_values) - 2),
+                                                                                       np.random.binomial(1, 0.5 + 0.1, 1),
+                                                                                       np.random.binomial(1, 0.5 - 0.1 if t < num_steps/2 else 0.5 + 4*0.1, 1)]))
+    for i, (algorithm, args, kwargs) in enumerate(algos):
+        (average_regret[i], regret_bound[i]), precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, algorithm, regret=True, trial=True, *args, **kwargs)
+    folder = './results/exp3ix_trial/'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    np.save(folder + 'average_regret.npy', average_regret)
+    np.save(folder + 'percent_optimal.npy', precents_optimal)
+    print('saved average regret and percent optimal')
+
+    # average_rewards = np.load('average_rewards.npy')
+    # precents_optimal = np.load('percent_optimal.npy')
+
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    plt.plot(average_regret[0], label='EXP3')
+    plt.plot(average_regret[1], label='EXP3IX')
+    plt.plot(regret_bound[0], label='Regret Bound')
+    plt.xlabel('steps')
+    plt.ylabel('average regret')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(precents_optimal[0] * 100, label='EXP3')
+    plt.plot(precents_optimal[1] * 100, label='EXP3IX')
+    plt.xlabel('steps')
+    plt.ylabel('% optimal action')
+    plt.legend()
+
+    # Define a formatter function for percentages
+    def to_percent(y, position):
+        # Format tick label as percentage
+        return '{:.0f}%'.format(y)
+
+    # Create a FuncFormatter object using the formatter function
+    formatter = FuncFormatter(to_percent)
+
+    # Apply the formatter to the y-axis of the second subplot
+    plt.gca().yaxis.set_major_formatter(formatter)
+
+    plt.savefig(folder + 'exp3ix_trial.png')
+    plt.close()
 
 def run_exp3ix_adversarial():
     num_steps = 10000

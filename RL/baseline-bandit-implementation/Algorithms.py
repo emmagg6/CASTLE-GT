@@ -349,7 +349,7 @@ class EXP3IX(Algorithm):
     '''
     Implementation of the EXP3-IX algorithm
     '''
-    def __init__(self, n: int, time_horizon: int, gamma: float = None):
+    def __init__(self, n: int, time_horizon: int, gamma: float = None, dynamic_eta: bool = False):
         '''
         Initialize the EXP3-IX algorithm. Assuming rewards are in [0, 1] and taking losses as -rewards.
 
@@ -372,6 +372,8 @@ class EXP3IX(Algorithm):
 
         self.eta = np.sqrt((2 * np.log(n))/(n * self.time_horizon)) 
         self.gamma = self.eta / 2
+
+        self.dynamic_eta = dynamic_eta
 
         self.t = 0
 
@@ -398,6 +400,12 @@ class EXP3IX(Algorithm):
         reward : float
             The reward received from the action.
         '''
+        self.t += 1
+
+        if self.dynamic_eta:
+            self.eta = np.sqrt((2 * np.log(self.n))/(self.n * self.t))
+            self.gamma = self.eta / 2
+
         # Make sure the loss which is l=-r is in [0, 1]
         estimated_loss = (-1 * reward + 1) / (self.action_probs[action] + self.gamma) # l_t / (p_t(a) + γ)
 
@@ -406,9 +414,7 @@ class EXP3IX(Algorithm):
         # self.weights = self.weights * np.exp(-1 * self.eta * estimated_losses_vector)
 
         self.weights[action] *= np.exp(-1 * self.eta * estimated_loss)
-        
-        self.t += 1
-
+    
     def reset(self) -> None:
         '''
         Reset the weights.
