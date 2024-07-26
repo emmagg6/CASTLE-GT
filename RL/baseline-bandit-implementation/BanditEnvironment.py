@@ -36,7 +36,9 @@ class BanditEnvironment:
         reward : float
             The reward sampled from a normal distribution with mean q_values[action] and standard deviation 1.
         '''
-        return self.q_values[action] + np.random.normal(0, 1)
+        reward = self.q_values[action] + np.random.normal(0, 1)
+        print(f"Action: {action}, True Value: {self.q_values[action]}, Reward: {reward}")
+        return reward
     
     def get_optimal_action(self) -> int:
         '''
@@ -65,6 +67,8 @@ class BanditEnvironment:
         Reset the environment.
         '''
         self.q_values = self.q_dist_func(self.n)
+
+
 
 class BanditNonstationary(BanditEnvironment):
     '''
@@ -110,6 +114,7 @@ class BanditNonstationary(BanditEnvironment):
         '''
         self.random_walk()
         return self.q_values[action] + np.random.normal(0, 1)
+
 
 class AdversarialBandit(BanditEnvironment):
     '''
@@ -184,3 +189,69 @@ class AdversarialBandit(BanditEnvironment):
         self.cummulative_rewards = np.zeros(self.n)
         self.t = 0
     
+
+class DeterministicBanditEnvironment:
+    '''
+    A simple bandit environment with n actions.
+    The true action values are sampled from a normal distribution with mean 0 and standard deviation 1.
+    '''
+    def __init__(self, n: int) -> None:
+        '''
+        Initialize the BanditEnvironment.
+
+        Parameters
+        ----------
+        n : int
+            Number of actions.
+        q_dist_func : function, optional
+            A function that takes n as input and returns a numpy array of 
+            length n containing the true action values.
+        '''
+        self.n = n
+        self.q_values = np.arange(0, n) / n
+
+    def get_reward(self, action: int) -> float:
+        '''
+        Get the reward for a given action.
+
+        Parameters
+        ----------
+        action : int
+            The action for which to get the reward.
+
+        Returns
+        -------
+        reward : float
+            The reward sampled from a normal distribution with mean q_values[action] and standard deviation 1.
+        '''
+        reward = self.q_values[action]
+        print(f"Action: {action}, True Value: {self.q_values[action]}, Reward: {reward}")
+        return reward
+    
+    def get_optimal_action(self) -> int:
+        '''
+        Get the optimal action.
+
+        Returns
+        -------
+        optimal_action : int
+            The action with the highest true action value.
+        '''
+        return np.argmax(self.q_values)
+    
+    def get_optimal_value(self) -> float:
+        '''
+        Get the optimal value.
+
+        Returns
+        -------
+        optimal_value : float
+            The highest true action value.
+        '''
+        return np.max(self.q_values)
+    
+    def reset(self) -> None:
+        '''
+        Reset the environment.
+        '''
+        self.q_values = np.arange(0, self.n) / self.n

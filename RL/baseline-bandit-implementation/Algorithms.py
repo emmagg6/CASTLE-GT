@@ -36,7 +36,7 @@ class EpsilonGreedy(Algorithm):
     '''
     Implementation of the EpsilonGreedy exploration-exploitation algorithm from Sutton and Barto's book.
     '''
-    def __init__(self, n: int, epsilon: float, alpha: float = None, q_estimates_func: Callable = lambda n: np.zeros(n)) -> None:
+    def __init__(self, n: int, epsilon: float = 0.1, alpha: float = None, q_estimates_func: Callable = lambda n: np.zeros(n)) -> None:
         '''
         Initialize the EpsilonGreedy algorithm.
 

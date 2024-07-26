@@ -4,7 +4,7 @@ Train and evaluate different bandit algorithms.
 
 import numpy as np
 from Algorithms import EpsilonGreedy, Algorithm, UCB, GradientBandit, EXP3, EXP3IX, EXP3IXrl
-from BanditEnvironment import BanditEnvironment, BanditNonstationary, AdversarialBandit
+from BanditEnvironment import BanditEnvironment, BanditNonstationary, AdversarialBandit, DeterministicBanditEnvironment
 from tqdm import tqdm
 from typing import Union, Tuple
 import os
@@ -57,6 +57,7 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
         for i in range(num_steps):
             action = algorithm.select_action()
             reward = bandit.get_reward(action)
+            print("agent sees the reward", reward)
             algorithm.train(action, reward)
 
             # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
@@ -156,9 +157,6 @@ def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, 
     rl_algo = rl_algo(n, *args, **algo_kwargs)
     gt_algo = gt_algo()
 
-    trained_rl_algos = []
-    trained_gt_algos = []
-
     #   TRAINING   #
     for _ in tqdm(range(num_runs), desc=f'Training {str(gt_algo)} with {str(rl_algo)}'):
         bandit.reset()
@@ -195,13 +193,6 @@ def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, 
                 # Calculate the weak regret bound with g >= G_max and G_max <= T -> g = T
                 regret_bound[i] += 2 * math.sqrt(math.e - 1) * math.sqrt(rl_algo.t * n * math.log(n))
 
-            
-        
-        # Trained Algos
-        trained_rl_algos.append(rl_algo)
-        eq, visits = gt_algo.get_equilibrium()
-        trained_gt_algos.append((eq, visits))
-
 
         if regret:
             if not trial:
@@ -225,53 +216,57 @@ def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, 
     if regret:
         regret_bound /= num_runs
         # return (average_measures, regret_bound), precents_optimal
+
+    # Trained Algos
+    trained_rl_algo = rl_algo
+    eq, visits = gt_algo.get_equilibrium()
     
     #   EVALUATION   #
-    for i, trained_rl_algo in enumerate(trained_rl_algos):
-        eq, visits = trained_gt_algos[i]
-        for _ in tqdm(range(num_runs), desc=f'Evaluating {str(gt_algo)} with {str(trained_rl_algo)}'):
-            bandit.reset()
-            rewards = np.zeros(num_steps)
+    for _ in tqdm(range(1), desc=f'Evaluating {str(gt_algo)} with {str(trained_rl_algo)}'):
+        bandit.reset()
+        rewards = np.zeros(num_steps)
 
-            picked_actions = np.zeros(num_steps)
-            exp3ixrl_picked_actions_cnt = np.zeros(num_steps)
-            cummulative_rewards = [0] * num_steps
-            for i in range(num_steps):
-                action = gt_algo.select_action(eq, visits, certainty)
-                if action == -1:
-                    action = trained_rl_algo.select_action()
-                else:
-                    exp3ixrl_picked_actions_cnt += 1
-                reward = bandit.get_reward(action)
-
-                # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
-                if not regret:
-                    rewards[i] = reward
-
-                    optimal_action = bandit.get_optimal_action()
-                    precents_optimal[i] += action == optimal_action
-                else:
-                    rewards[i] = rewards[i-1] + reward if i > 0 else reward
-
-            if regret:
-                if not trial:
-                    optimal_action = bandit.get_optimal_action() # Overall optimal action
-                    # print(f'Optimal action: {optimal_action + 1}')
-                    cummulative_rewards = np.vstack(cummulative_rewards)[:, optimal_action]
-                average_measures_exp3ix += cummulative_rewards - rewards # Weak regret            
-
-                # Calculate the weak regret bound without upper bound on G_max
-                # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cummulative_rewards + (n * math.log(n)) / algorithm.gamma
-
-                if not trial:
-                    # Calculate the optimal action
-                    precents_optimal_exp3ix += picked_actions == optimal_action
+        picked_actions = np.zeros(num_steps)
+        exp3ixrl_picked_actions_cnt = np.zeros(num_steps)
+        cummulative_rewards = [0] * num_steps
+        for i in range(num_steps):
+            action = gt_algo.select_action(eq, visits, certainty)
+            if action == -1:
+                action = trained_rl_algo.select_action()
             else:
-                average_measures_exp3ix += rewards
+                exp3ixrl_picked_actions_cnt += 1
+            reward = bandit.get_reward(action)
 
-    average_measures_exp3ix /= num_runs
-    precents_optimal_exp3ix /= num_runs
-    precent_exp3ixrl_picked_actions = exp3ixrl_picked_actions_cnt / num_runs
+            # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
+            if not regret:
+                rewards[i] = reward
+
+                optimal_action = bandit.get_optimal_action()
+                precents_optimal[i] += action == optimal_action
+            else:
+                rewards[i] = rewards[i-1] + reward if i > 0 else reward
+
+        if regret:
+            if not trial:
+                optimal_action = bandit.get_optimal_action() # Overall optimal action
+                # print(f'Optimal action: {optimal_action + 1}')
+                cummulative_rewards = np.vstack(cummulative_rewards)[:, optimal_action]
+            average_measures_exp3ix += cummulative_rewards - rewards # Weak regret            
+
+            # Calculate the weak regret bound without upper bound on G_max
+            # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cummulative_rewards + (n * math.log(n)) / algorithm.gamma
+
+            if not trial:
+                # Calculate the optimal action
+                precents_optimal_exp3ix += picked_actions == optimal_action
+        else:
+            average_measures_exp3ix += rewards
+
+    average_measures_exp3ix /= 1
+    precents_optimal_exp3ix /= 1
+    precent_exp3ixrl_picked_actions = exp3ixrl_picked_actions_cnt / 1
+
+    print("precent exp3ixrl picked actions", precent_exp3ixrl_picked_actions)
 
     if regret:
         regret_bound /= num_runs
@@ -281,7 +276,7 @@ def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, 
 
 
 def main():
-    # epsilon_greedy()
+    epsilon_greedy()
     # ucb()
     # gradient_bandit()
     # gradient_bandit_no_baseline()
@@ -292,7 +287,7 @@ def main():
     # run_exp3ix_adversarial()
     # exp3ix_trial()
     # exp3ix_dynamic()
-    gt_all()
+    # gt_all()
 
 def gt_all():
     num_steps = 10000
@@ -639,7 +634,7 @@ def epsilon_greedy():
     epsilons = [0, 0.01, 0.1]
     average_rewards = np.zeros((len(epsilons), num_steps))
     precents_optimal = np.zeros((len(epsilons), num_steps))
-    bandit = BanditEnvironment(10)
+    bandit = DeterministicBanditEnvironment(10)
     for i, epsilon in enumerate(epsilons):
         average_rewards[i], precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, EpsilonGreedy, epsilon)
     folder = './results/epsilon-greedy/'
