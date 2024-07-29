@@ -533,7 +533,7 @@ class EXP3IXrl(Algorithm):
     def get_equilibrium(self):
         return self.weights, self.action_selected
     
-    def select_action(self, eq, visits, certainty) -> int:
+    def action_selection(self, eq, visits, certainty) -> int:
         # only select actions have been seen are above the certainty threshold 
         valid_actions = [a for a in visits.keys() if visits[a] > certainty]
         if len(valid_actions) == 0:
