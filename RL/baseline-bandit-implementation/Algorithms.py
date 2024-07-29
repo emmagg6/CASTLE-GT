@@ -32,6 +32,12 @@ class Algorithm:
         '''
         raise NotImplementedError
 
+    def soft_reset(self) -> None:
+        '''
+        Soft reset the algorithm.
+        '''
+        raise NotImplementedError
+
 class EpsilonGreedy(Algorithm):
     '''
     Implementation of the EpsilonGreedy exploration-exploitation algorithm from Sutton and Barto's book.
@@ -104,6 +110,12 @@ class EpsilonGreedy(Algorithm):
         self.action_counts = np.zeros(self.n)
         self.t = 0
 
+    def soft_reset(self) -> None:
+        '''
+        Soft reset the time.
+        '''
+        self.t = 0
+
     def __str__(self) -> str:
         return f'EpsilonGreedy(epsilon={self.epsilon})'
 
@@ -171,6 +183,12 @@ class UCB(Algorithm):  # Em - this is great and traditionally has shown improvem
         '''
         self.q_estimates = self.q_estimates_func(self.n)
         self.action_counts = np.zeros(self.n)
+        self.t = 0
+
+    def soft_reset(self) -> None:
+        '''
+        Soft reset the time.
+        '''
         self.t = 0
 
     def __str__(self) -> str:
@@ -254,6 +272,13 @@ class GradientBandit(Algorithm): # Em - this is a great algorithm (also excels a
         self.preferences = self.preference_func(self.n)
         self.action_probs = self.softmax(self.preferences)
         self.action_counts = np.zeros(self.n)
+        self.t = 0
+        self.average_reward = 0
+
+    def soft_reset(self) -> None:
+        '''
+        Soft reset the time and average reward.
+        '''
         self.t = 0
         self.average_reward = 0
 
@@ -430,11 +455,11 @@ class EXP3IX(Algorithm):
         return f'EXP3IX (eta={self.eta})'
     
 
-class EXP3IXrl:
+class EXP3IXrl(Algorithm):
     '''
     Implementation of the EXP3-IX algorithm
     '''
-    def __init__(self, n: int = 10, time_horizon: int = 100, gamma: float = None, dynamic_eta: bool = True):
+    def __init__(self, n: int = 0, time_horizon: int = 100, gamma: float = None, dynamic_eta: bool = True):
         '''
         Initialize the EXP3-IX algorithm. Assuming rewards are in [0, 1] and taking losses as -rewards.
 
@@ -452,16 +477,17 @@ class EXP3IXrl:
         self.n = n
         self.time_horizon = time_horizon # For g = T in gamma upper bound on G_max in the paper
         self.t = 0 # start at time 0
+        # self.weights = {str(a): 1 for a in range(n)} # dictionary of weights for each action
         self.weights = {} # dictionary of weights for each action
         self.action_probs = {} # dictionary of action probabilities
         self.action_selected = {} # dictionary of the number of times the actions are sampled / selected
 
-        self.eta = np.sqrt((2 * np.log(self.n))/(self.n * self.time_horizon)) 
+        self.eta = 1 
         self.gamma = self.eta / 2
 
         self.dynamic_eta = dynamic_eta
 
-    def train_step(self, act: int, rew: float):
+    def train(self, act: int, rew: float):
         '''
         Train the EXP3 algorithm.
 
@@ -477,20 +503,35 @@ class EXP3IXrl:
 
         if a not in self.weights:
             self.n += 1
-            self.weights[a] = 1
-            self.action_probs[a] = 1/self.n
+            self.weights[a] = 1 if len(self.weights) == 0 else np.mean(list(self.weights.values()))
+
+        weight_sum = np.sum(list(self.weights.values()))
+        for action in self.weights:
+            self.action_probs[action] = self.weights[action] / weight_sum
+
+        if a not in self.action_selected:
+            self.action_selected[a] = 0
+
+        self.action_selected[a] += 1
 
         if self.dynamic_eta:
+            assert self.t > 0 and self.n > 0
             self.eta = np.sqrt((2 * np.log(self.n))/(self.n * self.t))
             self.gamma = self.eta / 2
 
         # Make sure the loss which is l=-r is in [0, 1]
         estimated_loss = (-1 * rew + 1) / (self.action_probs[a] + self.gamma) # l_t / (p_t(a) + γ)
 
-        self.weights[a] *= np.exp(-1 * self.eta * estimated_loss - np.max(list(self.weights.values())))
+        log_weights = {action: np.log(self.weights[action]) for action in self.weights}
+
+        xi = np.max(list(log_weights.values()))
+        log_weights[a] -= self.eta * estimated_loss
+
+        for action in self.weights:
+            self.weights[action] = np.exp(log_weights[action] - xi)
     
     def get_equilibrium(self):
-        return self.weights, self.action_probs
+        return self.weights, self.action_selected
     
     def select_action(self, eq, visits, certainty) -> int:
         # only select actions have been seen are above the certainty threshold 
@@ -505,9 +546,17 @@ class EXP3IXrl:
         '''
         Reset the weights.
         '''
+        # self.weights = {str(a): 1 for a in range(self.n)}
         self.weights = {}
         self.action_probs = {}
         self.action_selected = {}
+        self.t = 0
+        self.n = 0
+
+    def soft_reset(self) -> None:
+        '''
+        Soft reset the time.
+        '''
         self.t = 0
 
     def __str__(self) -> str:
