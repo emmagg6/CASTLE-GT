@@ -477,6 +477,7 @@ class EXP3IXrl(Algorithm):
         self.n = n
         self.time_horizon = time_horizon # For g = T in gamma upper bound on G_max in the paper
         self.t = 0 # start at time 0
+        # self.weights = {str(a): 1 for a in range(n)} # dictionary of weights for each action
         self.weights = {} # dictionary of weights for each action
         self.action_probs = {} # dictionary of action probabilities
         self.action_selected = {} # dictionary of the number of times the actions are sampled / selected
@@ -545,6 +546,7 @@ class EXP3IXrl(Algorithm):
         '''
         Reset the weights.
         '''
+        # self.weights = {str(a): 1 for a in range(self.n)}
         self.weights = {}
         self.action_probs = {}
         self.action_selected = {}

@@ -13,6 +13,247 @@ from matplotlib.ticker import FuncFormatter
 import math
 import copy
 
+def main():
+    # epsilon_greedy()
+    # ucb()
+    # gradient_bandit()
+    # gradient_bandit_no_baseline()
+    # epsilon_greedy_optimistic()
+    # nonstationary()
+    
+    # run_exp3()
+    # run_exp3ix_adversarial()
+    # exp3ix_trial()
+    # exp3ix_dynamic()
+    # gt_all()
+    gt()
+
+def train_and_evaluate_gt(bandit: BanditEnvironment, num_steps: int, num_runs: int, rl_algorithm: Algorithm, gt_algorithm: Algorithm, certainty: int, regret: bool = False, trial=False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
+    '''
+    Train and evaluate the EpsilonGreedy algorithm.
+
+    Parameters
+    ----------
+    bandit : BanditEnvironment
+        The bandit environment.
+    num_steps : int
+        The number of steps to run the algorithm.
+    num_runs : int
+        The number of runs to average over.
+    rl_algorithm : Algorithm
+        The RL training algorithm to use. E.g. EpsilonGreedy, UCB, etc.
+    gt_algorithm : Algorithm
+        The GT training algorithm to use. E.g. EXP3IXrl.
+    certainty : int
+        The certainty level for the GT algorithm. How many times each action should be visited to have enough confidence in GT.
+    regret : bool, optional
+        If True, calculate based on regret. Defaults to False.
+    trial : bool, optional
+        If True, use a hardcoded switch of optimal action. Defaults to False.
+    *args, **kwargs
+        Additional arguments to pass to the algorithm. E.g. epsilon for EpsilonGreedy.
+
+    Returns
+    -------
+    average_rewards : np.ndarray
+        The average reward at each step.
+    percents_optimal : np.ndarray
+        The percentage of optimal actions the algorithm takes at each step.
+    '''
+    n = bandit.n
+
+    rl_algorithm = rl_algorithm(n, *args, **kwargs)
+    gt_algorithm = gt_algorithm()
+
+    ##  TRAINING   ##
+    # Train the gt_algorithm with the rl_algorithm
+    bandit.reset()
+    # rl_algorithm.reset()
+    # gt_algorithm.reset()
+    # for _ in tqdm(range(1), desc=f'Training {str(gt_algorithm)} with {str(rl_algorithm)}'):
+    # bandit.reset()
+    # rl_algorithm.soft_reset()
+    # gt_algorithm.soft_reset()
+    for i in tqdm(range(num_steps), desc=f'Training {str(gt_algorithm)} with {str(rl_algorithm)}'):
+        action = rl_algorithm.select_action()
+        reward = bandit.get_reward(action)
+        # print("agent sees the reward", reward)
+        rl_algorithm.train(action, reward)
+        gt_algorithm.train(action, reward)
+
+    print(f"{str(gt_algorithm)} equalibtium (weights): {gt_algorithm.get_equilibrium()[0]}")
+
+
+    ## EVALUATION  ##
+    rl_average_measures = np.zeros(num_steps)
+    rl_percents_optimal = np.zeros(num_steps)
+    gt_average_measures = np.zeros(num_steps)
+    gt_percents_optimal = np.zeros(num_steps)
+
+    # bandit copy for rl_algorithm
+    rl_bandit = copy.deepcopy(bandit)
+
+    equalibrum, visits = gt_algorithm.get_equilibrium()
+    for _ in tqdm(range(num_runs), desc=f'Evaluating {str(gt_algorithm)} with {str(rl_algorithm)}'):
+        bandit.reset()
+        rl_bandit = copy.deepcopy(bandit) # Always have them exactly the same
+
+        rewards = np.zeros(num_steps)
+        rl_rewards = np.zeros(num_steps)
+
+        picked_actions = np.zeros(num_steps)
+        rl_picked_actions = np.zeros(num_steps)
+
+        cumulative_rewards = [0] * num_steps
+        rl_cumulative_rewards = [0] * num_steps
+
+        optimal_actions = np.zeros(num_steps)
+        for i in range(num_steps):
+            ## GT ##
+            action = gt_algorithm.select_action(equalibrum, visits, certainty)
+            if action == -1:
+                print("RL action")
+                action = rl_algorithm.select_action()
+            reward = bandit.get_reward(action)
+
+            ## RL ##
+            rl_action = rl_algorithm.select_action()
+            rl_reward = rl_bandit.get_reward(rl_action)
+
+            # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
+            if not regret:
+                rewards[i] = reward
+
+                optimal_action = bandit.get_optimal_action()
+                rl_percents_optimal[i] += action == optimal_action
+            else:
+                rewards[i] = rewards[i-1] + reward if i > 0 else reward # Cumulative rewards
+                rl_rewards[i] = rl_rewards[i-1] + rl_reward if i > 0 else rl_reward # Cumulative rewards
+
+                cumulative_rewards[i] = bandit.get_optimal_value() # If regret - returns cumulative rewards
+                rl_cumulative_rewards[i] = rl_bandit.get_optimal_value() # If regret - returns cumulative rewards
+
+                if trial:
+                    optimal_action = 8 if i < num_steps/2 else 9 #bandit.get_optimal_action()
+
+                    cumulative_rewards[i] = cumulative_rewards[i][optimal_action]
+                    rl_cumulative_rewards[i] = rl_cumulative_rewards[i][optimal_action]
+
+                    gt_percents_optimal[i] += action == optimal_action
+                    rl_percents_optimal[i] += rl_action == optimal_action
+
+                picked_actions[i] = action # Prepare for calculating the optimal action
+                rl_picked_actions[i] = rl_action # Prepare for calculating the optimal action
+
+        if regret:
+            if not trial:
+                optimal_action = bandit.get_optimal_action() # Overall optimal action
+                rl_optimal_action = rl_bandit.get_optimal_action() # Overall optimal action
+                # print(f'Optimal action: {optimal_action + 1}')
+                cumulative_rewards = np.vstack(cumulative_rewards)[:, optimal_action]
+                rl_cumulative_rewards = np.vstack(rl_cumulative_rewards)[:, rl_optimal_action]
+
+            gt_average_measures += cumulative_rewards - rewards # Weak regret
+            rl_average_measures += rl_cumulative_rewards - rl_rewards # Weak regret       
+
+            # Calculate the weak regret bound without upper bound on G_max
+            # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cumulative_rewards + (n * math.log(n)) / algorithm.gamma
+
+            if not trial:
+                # Calculate the optimal action
+                gt_percents_optimal += picked_actions == optimal_action
+                rl_percents_optimal += rl_picked_actions == rl_optimal_action
+        else:
+            gt_average_measures += rewards
+            rl_average_measures += rl_rewards
+
+    rl_average_measures /= num_runs
+    rl_percents_optimal /= num_runs
+    gt_average_measures /= num_runs
+    gt_percents_optimal /= num_runs
+
+    return (gt_average_measures, gt_percents_optimal), (rl_average_measures, rl_percents_optimal)
+
+def gt():
+    num_steps = 10000
+    num_runs = 200
+    gt_algo = EXP3IXrl
+    rl_algos = [(EXP3, (), {'time_horizon': num_steps}), (GradientBandit, (), {'alpha': 0.1, 'baseline': True}), (UCB, (), {'c': 2}), (EpsilonGreedy, (), {'epsilon': 0.1})]
+    # rl_algos = rl_algos[1:]
+
+    gt_average_regret = np.zeros((len(rl_algos), num_steps))
+    gt_percents_optimal = np.zeros((len(rl_algos), num_steps))
+    rl_average_regret = np.zeros((len(rl_algos), num_steps))
+    rl_percents_optimal = np.zeros((len(rl_algos), num_steps))
+    # regret_bound = np.zeros((len(algos), num_steps))
+
+    bandit = AdversarialBandit(10, q_dist_func=lambda n: np.arange(0, n) / n)
+    # bandit = AdversarialBandit(10, reward_update_func=lambda q_values, t: np.concatenate([np.random.binomial(1, 0.5, len(q_values) - 2),
+    #                                                                                    np.random.binomial(1, 0.5 + 0.1, 1),
+    #                                                                                    np.random.binomial(1, 0.5 - 0.1 if t < num_steps/2 else 0.5 + 4*0.1, 1)]))
+    for i, (algorithm, args, kwargs) in enumerate(rl_algos):
+        (gt_average_regret[i], gt_percents_optimal[i]), (rl_average_regret[i], rl_percents_optimal[i]) = train_and_evaluate_gt(bandit, num_steps, num_runs, algorithm, gt_algo, certainty = 1, regret=True, trial=False, *args, **kwargs)
+    folder = './results/gt_test/'
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    np.save(folder + 'gt_average_regret.npy', gt_average_regret)
+    np.save(folder + 'gt_percent_optimal.npy', gt_percents_optimal)
+    np.save(folder + 'rl_average_regret.npy', rl_average_regret)
+    np.save(folder + 'rl_percent_optimal.npy', rl_percents_optimal)
+    print('saved average regret and percent optimal')
+
+    # average_rewards = np.load('average_rewards.npy')
+    # percents_optimal = np.load('percent_optimal.npy')
+
+    plt.figure(figsize=(10, 20))
+    plt.subplot(2, 1, 1)
+    plt.plot(gt_average_regret[0], 'b-', label='EXP3IXrl with EXP3')
+    plt.plot(rl_average_regret[0], 'b--', label='EXP3')
+    plt.plot(gt_average_regret[1], 'b-', label='EXP3IXrl with GradientBandit')
+    plt.plot(rl_average_regret[1], 'b--', label='GradientBandit')
+    plt.plot(gt_average_regret[2], 'r-', label='EXP3IXrl with UCB')
+    plt.plot(rl_average_regret[2], 'r--', label='UCB')
+    plt.plot(gt_average_regret[3], 'g-', label='EXP3IXrl with EpsilonGreedy')
+    plt.plot(rl_average_regret[3], 'g--', label='EpsilonGreedy')
+    plt.xlabel('steps')
+    plt.ylabel('average regret')
+    plt.legend()
+
+    plt.subplot(2, 1, 2)
+    plt.plot(gt_percents_optimal[0], 'b-', label='EXP3IXrl with EXP3')
+    plt.plot(rl_percents_optimal[0], 'b--', label='EXP3')
+    plt.plot(gt_percents_optimal[1], 'b-', label='EXP3IXrl with GradientBandit')
+    plt.plot(rl_percents_optimal[1], 'b--', label='GradientBandit')
+    plt.plot(gt_percents_optimal[2], 'r-', label='EXP3IXrl with UCB')
+    plt.plot(rl_percents_optimal[2], 'r--', label='UCB')
+    plt.plot(gt_percents_optimal[3], 'g-', label='EXP3IXrl with EpislonGreedy')
+    plt.plot(rl_percents_optimal[3], 'g--', label='EpislonGreedy')
+    plt.xlabel('steps')
+    plt.ylabel('% optimal action')
+    plt.legend()
+
+    # Define a formatter function for percentages
+    def to_percent(y, position):
+        # Format tick label as percentage
+        return '{:.0f}%'.format(y)
+
+    # Create a FuncFormatter object using the formatter function
+    formatter = FuncFormatter(to_percent)
+
+    # Apply the formatter to the y-axis of the second subplot
+    plt.gca().yaxis.set_major_formatter(formatter)
+
+    plt.savefig(folder + 'gt_trial.png')
+    plt.close()
+
+
+
+
+
+### Deprecated methods ###
+
+
+
 def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int, algorithm: Algorithm, regret: bool = False, trial=False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
     '''
     Train and evaluate the EpsilonGreedy algorithm.
@@ -105,151 +346,6 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
         return (average_measures, regret_bound), percents_optimal
     
     return average_measures, percents_optimal
-
-def train_and_evaluate_gt(bandit: BanditEnvironment, num_steps: int, num_runs: int, rl_algorithm: Algorithm, gt_algorithm: Algorithm, certainty: int, regret: bool = False, trial=False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
-    '''
-    Train and evaluate the EpsilonGreedy algorithm.
-
-    Parameters
-    ----------
-    bandit : BanditEnvironment
-        The bandit environment.
-    num_steps : int
-        The number of steps to run the algorithm.
-    num_runs : int
-        The number of runs to average over.
-    rl_algorithm : Algorithm
-        The RL training algorithm to use. E.g. EpsilonGreedy, UCB, etc.
-    gt_algorithm : Algorithm
-        The GT training algorithm to use. E.g. EXP3IXrl.
-    certainty : int
-        The certainty level for the GT algorithm. How many times each action should be visited to have enough confidence in GT.
-    regret : bool, optional
-        If True, calculate based on regret. Defaults to False.
-    trial : bool, optional
-        If True, use a hardcoded switch of optimal action. Defaults to False.
-    *args, **kwargs
-        Additional arguments to pass to the algorithm. E.g. epsilon for EpsilonGreedy.
-
-    Returns
-    -------
-    average_rewards : np.ndarray
-        The average reward at each step.
-    percents_optimal : np.ndarray
-        The percentage of optimal actions the algorithm takes at each step.
-    '''
-    n = bandit.n
-
-    rl_algorithm = rl_algorithm(n, *args, **kwargs)
-    gt_algorithm = gt_algorithm()
-
-    ##  TRAINING   ##
-    # Train the gt_algorithm with the rl_algorithm
-    bandit.reset()
-    # rl_algorithm.reset()
-    # gt_algorithm.reset()
-    for _ in tqdm(range(1), desc=f'Training {str(gt_algorithm)} with {str(rl_algorithm)}'):
-        # bandit.reset()
-        # rl_algorithm.soft_reset()
-        # gt_algorithm.soft_reset()
-        for i in range(num_steps):
-            action = rl_algorithm.select_action()
-            reward = bandit.get_reward(action)
-            # print("agent sees the reward", reward)
-            rl_algorithm.train(action, reward)
-            gt_algorithm.train(action, reward)
-
-
-    ## EVALUATION   ##
-    rl_average_measures = np.zeros(num_steps)
-    rl_percents_optimal = np.zeros(num_steps)
-    gt_average_measures = np.zeros(num_steps)
-    gt_percents_optimal = np.zeros(num_steps)
-
-    # bandit copy for rl_algorithm
-    rl_bandit = copy.deepcopy(bandit)
-
-    equalibrum, visits = gt_algorithm.get_equilibrium()
-    for _ in tqdm(range(num_runs), desc=f'Evaluating {str(gt_algorithm)} with {str(rl_algorithm)}'):
-        bandit.reset()
-        rl_bandit = copy.deepcopy(bandit) # Always have them exactly the same
-
-        rewards = np.zeros(num_steps)
-        rl_rewards = np.zeros(num_steps)
-
-        picked_actions = np.zeros(num_steps)
-        rl_picked_actions = np.zeros(num_steps)
-
-        cumulative_rewards = [0] * num_steps
-        rl_cumulative_rewards = [0] * num_steps
-
-        optimal_actions = np.zeros(num_steps)
-        for i in range(num_steps):
-            ## GT ##
-            action = gt_algorithm.select_action(equalibrum, visits, certainty)
-            if action == -1:
-                print("RL action")
-                action = rl_algorithm.select_action()
-            reward = bandit.get_reward(action)
-
-            ## RL ##
-            rl_action = rl_algorithm.select_action()
-            rl_reward = rl_bandit.get_reward(rl_action)
-
-            # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
-            if not regret:
-                rewards[i] = reward
-
-                optimal_action = bandit.get_optimal_action()
-                rl_percents_optimal[i] += action == optimal_action
-            else:
-                rewards[i] = rewards[i-1] + reward if i > 0 else reward # Cumulative rewards
-                rl_rewards[i] = rl_rewards[i-1] + rl_reward if i > 0 else rl_reward # Cumulative rewards
-
-                cumulative_rewards[i] = bandit.get_optimal_value() # If regret - returns cumulative rewards
-                rl_cumulative_rewards[i] = rl_bandit.get_optimal_value() # If regret - returns cumulative rewards
-
-                if trial:
-                    optimal_action = 8 if i < num_steps/2 else 9 #bandit.get_optimal_action()
-
-                    cumulative_rewards[i] = cumulative_rewards[i][optimal_action]
-                    rl_cumulative_rewards[i] = rl_cumulative_rewards[i][optimal_action]
-
-                    gt_percents_optimal[i] += action == optimal_action
-                    rl_percents_optimal[i] += rl_action == optimal_action
-
-                picked_actions[i] = action # Prepare for calculating the optimal action
-                rl_picked_actions[i] = rl_action # Prepare for calculating the optimal action
-
-        if regret:
-            if not trial:
-                optimal_action = bandit.get_optimal_action() # Overall optimal action
-                rl_optimal_action = rl_bandit.get_optimal_action() # Overall optimal action
-                # print(f'Optimal action: {optimal_action + 1}')
-                cumulative_rewards = np.vstack(cumulative_rewards)[:, optimal_action]
-                rl_cumulative_rewards = np.vstack(rl_cumulative_rewards)[:, rl_optimal_action]
-
-            gt_average_measures += cumulative_rewards - rewards # Weak regret
-            rl_average_measures += rl_cumulative_rewards - rl_rewards # Weak regret       
-
-            # Calculate the weak regret bound without upper bound on G_max
-            # regret_bound += (math.exp(1) - 1) * algorithm.gamma * cumulative_rewards + (n * math.log(n)) / algorithm.gamma
-
-            if not trial:
-                # Calculate the optimal action
-                gt_percents_optimal += picked_actions == optimal_action
-                rl_percents_optimal += rl_picked_actions == rl_optimal_action
-        else:
-            gt_average_measures += rewards
-            rl_average_measures += rl_rewards
-
-    rl_average_measures /= num_runs
-    rl_percents_optimal /= num_runs
-    gt_average_measures /= num_runs
-    gt_percents_optimal /= num_runs
-
-    return (gt_average_measures, gt_percents_optimal), (rl_average_measures, rl_percents_optimal)
-
 
 
 def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, num_steps: int, num_runs: int, rl_algo: Algorithm, certainty: int, regret: bool = True, trial=False, *args, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
@@ -430,26 +526,12 @@ def train_and_evaluate_integrated(gt_algo: EXP3IXrl, bandit: BanditEnvironment, 
     return average_measures, percents_optimal, average_measures_exp3ix, percents_optimal_exp3ix
 
 
-def main():
-    # epsilon_greedy()
-    # ucb()
-    # gradient_bandit()
-    # gradient_bandit_no_baseline()
-    # epsilon_greedy_optimistic()
-    # nonstationary()
-    
-    # run_exp3()
-    # run_exp3ix_adversarial()
-    # exp3ix_trial()
-    # exp3ix_dynamic()
-    # gt_all()
-    gt()
-
 def gt():
-    num_steps = 1000
+    num_steps = 10000
     num_runs = 200
     gt_algo = EXP3IXrl
-    rl_algos = [(EpsilonGreedy, (), {'epsilon': 0.1}), (UCB, (), {'c': 2}), (GradientBandit, (), {'alpha': 0.1, 'baseline': True})]
+    rl_algos = [(EXP3, (), {'time_horizon': num_steps}), (GradientBandit, (), {'alpha': 0.1, 'baseline': True}), (UCB, (), {'c': 2}), (EpsilonGreedy, (), {'epsilon': 0.1})]
+    # rl_algos = rl_algos[1:]
 
     gt_average_regret = np.zeros((len(rl_algos), num_steps))
     gt_percents_optimal = np.zeros((len(rl_algos), num_steps))
@@ -477,23 +559,27 @@ def gt():
 
     plt.figure(figsize=(10, 20))
     plt.subplot(2, 1, 1)
-    plt.plot(gt_average_regret[0], 'b-', label='EXP3IXrl with EpsilonGreedy')
-    plt.plot(rl_average_regret[0], 'b--', label='EpsilonGreedy')
-    plt.plot(gt_average_regret[1], 'r-', label='EXP3IXrl with UCB')
-    plt.plot(rl_average_regret[1], 'r--', label='UCB')
-    plt.plot(gt_average_regret[2], 'g-', label='EXP3IXrl with GradientBandit')
-    plt.plot(rl_average_regret[2], 'g--', label='GradientBandit')
+    plt.plot(gt_average_regret[0], 'b-', label='EXP3IXrl with EXP3')
+    plt.plot(rl_average_regret[0], 'b--', label='EXP3')
+    plt.plot(gt_average_regret[1], 'b-', label='EXP3IXrl with GradientBandit')
+    plt.plot(rl_average_regret[1], 'b--', label='GradientBandit')
+    plt.plot(gt_average_regret[2], 'r-', label='EXP3IXrl with UCB')
+    plt.plot(rl_average_regret[2], 'r--', label='UCB')
+    plt.plot(gt_average_regret[3], 'g-', label='EXP3IXrl with EpsilonGreedy')
+    plt.plot(rl_average_regret[3], 'g--', label='EpsilonGreedy')
     plt.xlabel('steps')
     plt.ylabel('average regret')
     plt.legend()
 
     plt.subplot(2, 1, 2)
-    plt.plot(gt_percents_optimal[0], 'b-', label='EXP3IXrl with EpsilonGreedy')
-    plt.plot(rl_percents_optimal[0], 'b--', label='EpsilonGreedy')
-    plt.plot(gt_percents_optimal[1], 'r-', label='EXP3IXrl with UCB')
-    plt.plot(rl_percents_optimal[1], 'r--', label='UCB')
-    plt.plot(gt_percents_optimal[2], 'g-', label='EXP3IXrl with GradientBandit')
-    plt.plot(rl_percents_optimal[2], 'g--', label='GradientBandit')
+    plt.plot(gt_percents_optimal[0], 'b-', label='EXP3IXrl with EXP3')
+    plt.plot(rl_percents_optimal[0], 'b--', label='EXP3')
+    plt.plot(gt_percents_optimal[1], 'b-', label='EXP3IXrl with GradientBandit')
+    plt.plot(rl_percents_optimal[1], 'b--', label='GradientBandit')
+    plt.plot(gt_percents_optimal[2], 'r-', label='EXP3IXrl with UCB')
+    plt.plot(rl_percents_optimal[2], 'r--', label='UCB')
+    plt.plot(gt_percents_optimal[3], 'g-', label='EXP3IXrl with EpislonGreedy')
+    plt.plot(rl_percents_optimal[3], 'g--', label='EpislonGreedy')
     plt.xlabel('steps')
     plt.ylabel('% optimal action')
     plt.legend()
