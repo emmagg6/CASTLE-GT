@@ -225,7 +225,7 @@ class DeterministicBanditEnvironment:
             The reward sampled from a normal distribution with mean q_values[action] and standard deviation 1.
         '''
         reward = self.q_values[action]
-        print(f"Action: {action}, True Value: {self.q_values[action]}, Reward: {reward}")
+        # print(f"Action: {action}, True Value: {self.q_values[action]}, Reward: {reward}")
         return reward
     
     def get_optimal_action(self) -> int:

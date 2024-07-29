@@ -57,7 +57,6 @@ def train_and_evaluate(bandit: BanditEnvironment, num_steps: int, num_runs: int,
         for i in range(num_steps):
             action = algorithm.select_action()
             reward = bandit.get_reward(action)
-            print("agent sees the reward", reward)
             algorithm.train(action, reward)
 
             # If not regret, calculate rewards. Otherwise, calculate regret as G_max - G_t
@@ -636,7 +635,8 @@ def epsilon_greedy():
     precents_optimal = np.zeros((len(epsilons), num_steps))
     bandit = DeterministicBanditEnvironment(10)
     for i, epsilon in enumerate(epsilons):
-        average_rewards[i], precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, EpsilonGreedy, epsilon)
+        average_rewards[i], precents_optimal[i] = train_and_evaluate(bandit, num_steps, num_runs, EpsilonGreedy)
+    # average_rewards, precents_optimal = train_and_evaluate(bandit= bandit, num_steps= num_steps, num_runs= num_runs, algorithm= EpsilonGreedy)
     folder = './results/epsilon-greedy/'
     np.save(folder + 'average_rewards.npy', average_rewards)
     np.save(folder + 'percent_optimal.npy', precents_optimal)
