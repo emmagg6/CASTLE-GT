@@ -46,6 +46,7 @@ for trn_amnt in trn_intercals:
                             mean = float(parts[2].split('mean: ')[1].strip())
                             std_dev = float(parts[3].split('standard deviation')[1].strip())
                             proportion = float(parts[4].split('proportion CCE: ')[1].strip())
+
                             
                             if balance == 100000000000: 
                                 rl_mean = mean
@@ -65,6 +66,12 @@ for trn_amnt in trn_intercals:
                 'Standard Deviation': std_devs,
                 'Percentage' : proportions
             })
+
+            print("Dataframe:")
+            print(data)
+
+            print("RL Mean: ", rl_mean)
+            print("RL Std Dev: ", rl_std_dev)
 
         
             data_sorted = data.sort_values(by='Balance')
@@ -97,6 +104,6 @@ for trn_amnt in trn_intercals:
             # Legend after scatter plot
             plt.legend(loc='lower right', fontsize='small')
 
-            plt.savefig(directory + 'plot.png')
+            plt.savefig(directory + 'adhoc-plot.png')
 
             plt.close()
